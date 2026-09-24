@@ -32,8 +32,8 @@ Variabel di Railway:
 | `PRIVATE_KEY` | Private key wallet creator. Isi sendiri di dashboard Railway, jangan pernah di-commit. |
 | `RPC_URL` | RPC Solana pribadi (Helius, QuickNode, dll) |
 | `DRY_RUN` | `true` untuk simulasi, `false` untuk live |
-| `X_URL`, `TG_URL` | Link X dan Telegram yang tampil di website |
-| `SITE_URL` | Opsional, hanya kalau memakai domain sendiri (untuk kartu preview di X/Telegram) |
+| `X_URL` | Link X yang tampil di website (`https://x.com/feedmelana`) |
+| `SITE_URL` | Opsional, hanya kalau memakai domain sendiri (untuk kartu preview di X) |
 
 Website mengisi dirinya sendiri dari variabel ini: sebelum `MINT` diisi, web menampilkan "Launching soon". Setelah diisi, CA, tombol beli pump.fun, dan Stomach Wallet (alamat publik dari `PRIVATE_KEY`) muncul otomatis. Bot juga menulis `status.json` tiap ronde, jadi web tahu apakah Gob masih telur dan berapa fee yang menunggu di vault.
 

@@ -35,10 +35,9 @@ const PUBLIC_CONFIG = JSON.stringify({
   mint: process.env.MINT || "",
   stomachWallet: stomachWallet(),
   xUrl: process.env.X_URL || "",
-  tgUrl: process.env.TG_URL || "",
 });
 
-// Absolute site URL for the social-card meta tags (X and Telegram ignore relative image URLs).
+// Absolute site URL for the social-card meta tags (X ignores relative image URLs).
 const SITE_URL = (process.env.SITE_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "")).replace(/\/$/, "");
 const INDEX = fs.readFileSync(path.join(SITE, "index.html"), "utf8");
 function indexHtml(req) {

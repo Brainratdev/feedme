@@ -12,6 +12,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@feedmelana">
 <meta name="twitter:title" content="FEED ME · $FEEDME on Solana">
 <meta name="twitter:description" content="Meet Gob, a hungry liquidity pool. 100% of creator fees go back into its mouth, LP burned.">
 <meta name="twitter:image" content="__SITE_URL__/assets/og.png">
@@ -415,7 +416,7 @@
     <p class="big-bye">STILL<br>HUNGRY.</p>
     <div class="foot-row">
       <span>$FEEDME · a community memecoin on Solana · no roadmap, only appetite</span>
-      <span id="socials">Socials coming at launch</span>
+      <span id="socials">X account coming at launch</span>
     </div>
   </footer>
 </div>
@@ -426,14 +427,13 @@
 <script>
 /* ================== CONFIG ==================
    With server.js (Railway) everything here is filled in live:
-   /config.json from the env vars MINT, PRIVATE_KEY (public key only), X_URL, TG_URL
+   /config.json from the env vars MINT, PRIVATE_KEY (public key only), X_URL
    /status.json and /feedings.json written by the bot.
    Edit these only if you host this page without server.js. */
 const CONFIG = {
   mint: "",            // $FEEDME contract address
   stomachWallet: "",   // wallet that receives the creator fees (the coin creator)
   xUrl: "",
-  tgUrl: "",
   graduated: false,    // true once the coin is on PumpSwap
   pendingSol: 0,       // creator fees waiting in the vault
   feedings: [],        // newest first: { date, sol, tokens, tx }
@@ -713,7 +713,7 @@ async function getJson(url) {
 }
 async function loadLive() {
   const [cfg, status, feedings] = await Promise.all([getJson("config.json"), getJson("status.json"), getJson("feedings.json")]);
-  if (cfg) for (const k of ["mint", "stomachWallet", "xUrl", "tgUrl"]) if (cfg[k]) CONFIG[k] = cfg[k];
+  if (cfg) for (const k of ["mint", "stomachWallet", "xUrl"]) if (cfg[k]) CONFIG[k] = cfg[k];
   if (status) { CONFIG.graduated = !!status.graduated; CONFIG.pendingSol = Number(status.pendingSol) || 0; }
   if (Array.isArray(feedings) && feedings.length) { CONFIG.feedings = feedings; CONFIG.graduated = true; }
 }
@@ -742,12 +742,10 @@ loadLive().then(() => {
     $("stomachAddr").textContent = "Revealed at launch";
     $("stomachLink").hidden = true;
   }
-  const socials = [[CONFIG.xUrl, "X / Twitter"], [CONFIG.tgUrl, "Telegram"]].filter(([u]) => u);
-  if (socials.length) {
-    $("socials").replaceChildren(...socials.flatMap(([u, label], i) => {
-      const a = document.createElement("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; a.textContent = label;
-      return i ? [" · ", a] : [a];
-    }));
+  if (CONFIG.xUrl) {
+    const a = document.createElement("a"); a.href = CONFIG.xUrl; a.target = "_blank"; a.rel = "noopener";
+    a.textContent = "@" + CONFIG.xUrl.replace(/\/+$/, "").split("/").pop() + " on X";
+    $("socials").replaceChildren(a);
   }
   $("plateWait").textContent = fmt(CONFIG.pendingSol, 3) + " SOL";
   if (!CONFIG.graduated && CONFIG.pendingSol > 0) {
