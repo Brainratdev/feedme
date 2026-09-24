@@ -9,6 +9,8 @@ Meet **Gob**, a hungry liquidity pool on Solana. 100% of the creator fees from $
 | [`feedme-bot/`](feedme-bot) | Bot yang klaim creator fee → beli → add liquidity → bakar LP |
 | `server.js` | Menyajikan website dan menjalankan bot dalam satu proses (untuk Railway) |
 
+**Mau launch?** Ikuti [LAUNCH.md](LAUNCH.md): `npm run preflight` sekarang, lalu `npm run launch -- <CA>` begitu koin dibuat.
+
 ## Jalankan lokal
 
 ```bash

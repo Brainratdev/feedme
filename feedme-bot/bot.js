@@ -32,6 +32,7 @@ const CFG = {
   reserve: lamports(env("RESERVE_SOL", "0.03")),     // always left in the wallet for tx fees and rent
   slippage: Number(env("SLIPPAGE_PCT", "3")),        // percent, 3 = 3%
   intervalMin: Number(env("INTERVAL_MINUTES", "60")),
+  eggIntervalMin: Number(env("EGG_INTERVAL_MINUTES", "5")), // before graduation: cheap checks, so the site and the first meal stay fresh
   priorityFee: Number(env("PRIORITY_FEE_MICROLAMPORTS", "50000")),
   dryRun: env("DRY_RUN", "true") !== "false",
   feedingsFile: path.resolve(env("FEEDINGS_FILE", path.join(HERE, "../feedme/feedings.json"))),
@@ -157,7 +158,7 @@ async function round() {
 
   if (!graduated) {
     log("🥚 Fase telur: koin belum graduate, jadi belum ada pool untuk disuapi. Fee dibiarkan di vault (tetap terlihat publik).");
-    return;
+    return "egg";
   }
 
   // 2. claim creator fees from both the bonding curve vault and the PumpSwap vault
@@ -298,14 +299,15 @@ async function main() {
   process.on("SIGTERM", quit);
 
   for (;;) {
+    let phase = null;
     try {
-      await round();
+      phase = await round();
     } catch (e) {
       log(`❌ ${e.message}`);
       if (ONCE) process.exitCode = 1;
     }
     if (ONCE || stop) break;
-    const until = Date.now() + CFG.intervalMin * 60_000;
+    const until = Date.now() + (phase === "egg" ? CFG.eggIntervalMin : CFG.intervalMin) * 60_000;
     while (!stop && Date.now() < until) await sleep(1000);
     if (stop) break;
   }

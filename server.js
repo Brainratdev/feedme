@@ -31,9 +31,10 @@ function stomachWallet() {
   }
   return "";
 }
+// The wallet stays hidden until the coin exists: showing it earlier would let snipers watch it for the launch.
 const PUBLIC_CONFIG = JSON.stringify({
   mint: process.env.MINT || "",
-  stomachWallet: stomachWallet(),
+  stomachWallet: process.env.MINT ? stomachWallet() : "",
   xUrl: process.env.X_URL || "",
 });
 

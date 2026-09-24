@@ -7,7 +7,9 @@
     "bot": "node feedme-bot/bot.js",
     "bot:once": "node feedme-bot/bot.js --once",
     "bot:check": "DRY_RUN=true node feedme-bot/bot.js --once",
-    "video": "node video/render.mjs"
+    "video": "node video/render.mjs",
+    "preflight": "node scripts/preflight.mjs",
+    "launch": "node scripts/launch.mjs"
   },
   "type": "module",
   "dependencies": {
