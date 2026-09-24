@@ -1,0 +1,54 @@
+<!doctype html>
+<!-- Asset renderer: open with ?pfp, ?pfp-kaiju or ?banner and screenshot at the matching size (see render.sh). -->
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=JetBrains+Mono:wght@700&display=swap">
+<style>html, body { margin: 0; background: transparent; } svg { display: block; }</style>
+<div id="out"></div>
+<script src="../gob.js"></script>
+<script>
+const mode = location.search.slice(1) || "pfp";
+
+function rays(cx, cy, R, n, fill) {
+  let d = "";
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * Math.PI * 2, a1 = ((i + .5) / n) * Math.PI * 2;
+    d += `M${cx} ${cy} L${r1(cx + R * Math.cos(a0))} ${r1(cy + R * Math.sin(a0))} L${r1(cx + R * Math.cos(a1))} ${r1(cy + R * Math.sin(a1))}Z `;
+  }
+  return `<path d="${d}" fill="${fill}"/>`;
+}
+const coin = (x, y, r, rot = 0) => `<g transform="rotate(${rot} ${x} ${y})"><circle cx="${x}" cy="${y}" r="${r}" fill="${C.horn}" stroke="${C.ink}" stroke-width="${r * .22}"/>
+  <text x="${x}" y="${y + r * .28}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="${r * .72}" fill="${C.ink}">SOL</text></g>`;
+// place a form so its ground line (local y 384) sits on groundY, centred on x
+const place = (k, x, groundY, s, id) => `<g transform="translate(${r1(x - 200 * s)} ${r1(groundY - 384 * s)}) scale(${s})">
+  <ellipse cx="200" cy="384" rx="${SHADOW_RX[k]}" ry="13" fill="${C.ink}" opacity=".18"/>${FORMS[k](id)}</g>`;
+
+let W, H, svg;
+if (mode === "pfp" || mode === "pfp-kaiju") {
+  W = H = 1000;
+  const k = mode === "pfp" ? 2 : 4;
+  const s = k === 2 ? 2.4 : 2.12;
+  svg = `<rect width="1000" height="1000" fill="${k === 2 ? "#FFD6E4" : C.ink}"/>
+    ${rays(500, 520, 900, 28, k === 2 ? "#FFB8CF" : "#4A1650")}
+    <circle cx="500" cy="520" r="340" fill="${k === 2 ? C.paper : "#6B2470"}" opacity=".75"/>
+    ${place(k, 500, k === 2 ? 930 : 905, s, "p")}`;
+} else {
+  W = 1500; H = 500;
+  const G = 432;
+  svg = `<rect width="1500" height="500" fill="#FFD6E4"/>
+    ${rays(1270, 300, 900, 36, "#FFC2D6")}
+    <circle cx="1270" cy="300" r="230" fill="${C.horn}" opacity=".55"/>
+    <rect x="0" y="${G}" width="1500" height="${500 - G}" fill="${C.ink}"/>
+    <path d="M0 ${G} H1500" stroke="${C.ink}" stroke-width="6"/>
+    ${coin(560, 110, 22, -14)}${coin(880, 64, 16, 12)}${coin(1470, 120, 18, 20)}${coin(1010, 150, 14, -8)}
+    ${place(0, 640, G, .4, "b0")}
+    ${place(1, 770, G, .46, "b1")}
+    ${place(2, 935, G, .6, "b2")}
+    ${place(3, 1130, G, .7, "b3")}
+    ${place(4, 1350, G, .86, "b4")}
+    <text x="64" y="196" font-family="Bagel Fat One, sans-serif" font-size="176" fill="${C.body}" stroke="${C.ink}" stroke-width="10" paint-order="stroke fill" letter-spacing="-2">FEED ME.</text>
+    <text x="70" y="240" font-family="JetBrains Mono, monospace" font-weight="700" font-size="26" letter-spacing="3" fill="${C.ink}">$FEEDME · SOLANA</text>
+    <text x="70" y="280" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="28" fill="${C.ink}">100% of creator fees → liquidity.</text>
+    <text x="70" y="314" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="28" fill="#6B4270">The dev eats nothing.</text>`;
+}
+document.getElementById("out").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${svg}</svg>`;
+</script>

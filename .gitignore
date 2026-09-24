@@ -1,0 +1,6 @@
+node_modules/
+.env
+.bot-state.json
+feedme/feedings.json
+.claude/
+.DS_Store

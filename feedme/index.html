@@ -1,0 +1,832 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FEED ME</title>
+<meta name="description" content="$FEEDME: meet Gob, a hungry liquidity pool on Solana. 100% of creator fees go back into its mouth. The dev eats nothing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --gum: #FFD6E4;        /* stomach-lining pink: the ground */
+    --gum-2: #FFC2D6;
+    --paper: #FFF6F9;
+    --plum: #2B0A2E;       /* ink + outlines */
+    --plum-soft: #6B4270;
+    --tomato: #FF5A36;     /* Gob */
+    --gullet: #5A0F2E;
+    --mustard: #FFC53D;    /* SOL crumbs, horns */
+
+    --display: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+    --body: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    --line: 3px solid var(--plum);
+    --pop: 5px 5px 0 var(--plum);
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--gum); }
+  body { margin: 0; background: var(--gum); color: var(--plum); font: 400 17px/1.55 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px dashed var(--tomato); outline-offset: 3px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); }
+
+  .demo { background: var(--plum); color: var(--mustard); font: 700 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; text-align: center; padding: 8px 16px; }
+
+  /* ---------- top bar ---------- */
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 18px; flex-wrap: wrap; }
+  .logo { font: 400 28px/1 var(--display); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .logo-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--tomato); border: var(--line); position: relative; }
+  .logo-dot::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: 5px; height: 8px; border-radius: 0 0 10px 10px; background: var(--gullet); }
+  .nav { display: flex; gap: 6px; flex-wrap: wrap; }
+  .nav a { font-weight: 600; font-size: 15px; text-decoration: none; padding: 8px 12px; border-radius: 999px; }
+  .nav a:hover { background: var(--gum-2); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font: 800 16px/1 var(--body); text-decoration: none; cursor: pointer;
+    padding: 14px 20px; border: var(--line); border-radius: 14px;
+    background: var(--mustard); color: var(--plum); box-shadow: var(--pop);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--plum); }
+  .btn:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--plum); }
+  .btn.ghost { background: var(--paper); }
+  .btn.small { padding: 10px 14px; font-size: 14px; border-radius: 12px; }
+  .bar-end { display: flex; align-items: center; gap: 10px; }
+  .snd { display: inline-flex; align-items: center; gap: 6px; font: 700 13px/1 var(--mono); color: var(--plum); background: var(--paper); border: var(--line); border-radius: 999px; padding: 8px 12px 8px 10px; cursor: pointer; }
+  .snd svg { width: 20px; height: 20px; }
+  .snd .x { display: none; }
+  .snd[aria-pressed="false"] .x { display: inline; }
+  .snd[aria-pressed="false"] .wave { display: none; }
+  .snd[aria-pressed="false"] { background: var(--gum-2); }
+  .btn[disabled] { opacity: .55; cursor: wait; transform: none; box-shadow: var(--pop); }
+
+  /* ---------- hero ---------- */
+  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(24px, 4vw, 56px); align-items: center; padding-block: clamp(16px, 4vw, 40px) clamp(40px, 6vw, 72px); }
+  .kicker { font: 700 13px/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--plum-soft); margin: 0 0 14px; }
+  h1 { font: 400 clamp(76px, 12vw, 164px)/.82 var(--display); margin: 0 0 22px; letter-spacing: -.01em; }
+  h1 .me { color: var(--tomato); -webkit-text-stroke: 3px var(--plum); paint-order: stroke fill; display: inline-block; transform: rotate(-4deg); }
+  .lede { font-size: clamp(18px, 2vw, 21px); max-width: 32ch; margin: 0 0 26px; }
+  .lede strong { background: var(--mustard); padding: 0 4px; border-radius: 4px; }
+  .cta { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+  .ca { display: flex; align-items: stretch; max-width: 480px; border: var(--line); border-radius: 14px; background: var(--paper); overflow: hidden; }
+  .ca-label { font: 700 12px/1 var(--mono); letter-spacing: .08em; background: var(--plum); color: var(--gum); padding: 0 12px; display: flex; align-items: center; }
+  .ca code { flex: 1; min-width: 0; font: 400 13px/1 var(--mono); padding: 14px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ca button { border: 0; border-left: var(--line); background: var(--mustard); font: 800 14px/1 var(--body); color: var(--plum); padding: 0 16px; cursor: pointer; }
+  .ca button:hover { background: #ffd36b; }
+  .stage-col { display: grid; gap: 12px; }
+  .feed-hint { text-align: center; font: 700 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--plum-soft); }
+  .feed-hint b { color: var(--plum); }
+
+  /* ---------- the monster ---------- */
+  .mon { position: relative; aspect-ratio: 1 / 1; width: 100%; max-width: 100%; }
+  .mon svg { position: relative; z-index: 1; width: 100%; height: 100%; display: block; overflow: visible; cursor: pointer; transition: filter .12s; }
+  .mon svg:focus-visible { outline: 3px dashed var(--tomato); outline-offset: -6px; border-radius: 24px; }
+  .mon .form { display: none; }
+  .mon .form.on { display: inline; }
+  .squash, .bob { transform-origin: 200px 382px; }
+  .mon .bob { animation: bob 3s ease-in-out infinite; }
+  .mon .form[data-stage="0"] .bob { animation: wobble 2.4s ease-in-out infinite; }
+  .mon .form[data-stage="4"] .bob { animation: stomp 2.2s ease-in-out infinite; }
+  .eye, .m, .charge, .steam circle, .hat { transform-box: fill-box; transform-origin: center; }
+  .tail { transform-origin: 296px 344px; animation: wag 2.6s ease-in-out infinite; }
+  .charge { animation: charge 1.3s ease-in-out infinite; }
+  .steam circle { opacity: 0; animation: steam 2.6s ease-out infinite; }
+  .steam circle:nth-child(2) { animation-delay: .9s; }
+  .steam circle:nth-child(3) { animation-delay: 1.7s; }
+  .drool { transform-box: fill-box; transform-origin: top center; animation: drip 2.8s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0) scale(1, 1) } 50% { transform: translateY(-9px) scale(.98, 1.02) } }
+  @keyframes wobble { 0%,60%,100% { transform: rotate(0) } 68% { transform: rotate(-6deg) } 76% { transform: rotate(5deg) } 84% { transform: rotate(-3deg) } 92% { transform: rotate(2deg) } }
+  @keyframes stomp { 0%,100% { transform: translateY(0) scale(1.03, .97) } 40% { transform: translateY(-12px) scale(.98, 1.03) } 55% { transform: translateY(0) scale(1.05, .95) } }
+  @keyframes wag { 0%,100% { transform: rotate(0) } 50% { transform: rotate(-9deg) } }
+  @keyframes charge { 0%,100% { transform: scale(.75); opacity: .55 } 50% { transform: scale(1.15); opacity: 1 } }
+  @keyframes steam { 0% { transform: translateY(0) scale(.5); opacity: 0 } 25% { opacity: .9 } 100% { transform: translateY(-46px) scale(1.4); opacity: 0 } }
+  @keyframes drip { 0%,100% { transform: scaleY(1) } 50% { transform: scaleY(1.35) } }
+
+  .bubble {
+    position: absolute; z-index: 2; top: 0; right: 0; max-width: 64%;
+    background: var(--paper); border: var(--line); border-radius: 20px; box-shadow: var(--pop);
+    padding: 12px 16px; font: 400 clamp(16px, 2vw, 21px)/1.1 var(--display);
+    transform-origin: bottom left; transition: transform .2s;
+  }
+  .bubble::after { content: ""; position: absolute; left: 22px; bottom: -16px; width: 22px; height: 22px; background: var(--paper); border-right: var(--line); border-bottom: var(--line); transform: rotate(45deg) skew(12deg, 12deg); }
+  .bubble.pop { transform: scale(1.08) rotate(-2deg); }
+
+  /* evolution fx */
+  .rays {
+    position: absolute; inset: -6%; border-radius: 50%; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .3s;
+    background: repeating-conic-gradient(from 0deg, rgba(255,197,61,.85) 0 9deg, rgba(255,197,61,0) 9deg 18deg);
+    -webkit-mask: radial-gradient(circle, #000 20%, transparent 68%); mask: radial-gradient(circle, #000 20%, transparent 68%);
+    animation: spin 7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg) } }
+  .mon.evolving .rays { opacity: 1; }
+  .mon.evolving svg { filter: brightness(0) invert(1) drop-shadow(0 0 10px #FFC53D) drop-shadow(0 0 26px #FFC53D); }
+  .flash { position: absolute; inset: 0; z-index: 3; border-radius: 50%; pointer-events: none; opacity: 0; background: radial-gradient(circle, #fff 0 28%, rgba(255,255,255,0) 70%); }
+  .fx { position: absolute; left: 50%; top: 56%; z-index: 4; pointer-events: none; }
+  .fx.coin { width: 20px; height: 20px; margin: -10px; border-radius: 50%; background: var(--mustard); border: 3px solid var(--plum); }
+  .fx.star { width: 28px; height: 28px; margin: -14px; background: var(--mustard); clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
+  .fx.bit { width: 12px; height: 12px; margin: -6px; border-radius: 4px; background: var(--tomato); border: 2px solid var(--plum); }
+  .fx.txt { font: 400 26px/1 var(--display); color: var(--mustard); -webkit-text-stroke: 2px var(--plum); paint-order: stroke fill; white-space: nowrap; transform: translate(-50%, -50%); }
+  .crumb { position: fixed; left: 0; top: 0; z-index: 50; width: 34px; height: 34px; border-radius: 50%; background: var(--mustard); border: 3px solid var(--plum); display: grid; place-items: center; font: 700 10px/1 var(--mono); color: var(--plum); pointer-events: none; }
+
+  /* ---------- stats ---------- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .stat { background: var(--paper); border: var(--line); border-radius: 18px; padding: 18px 18px 16px; }
+  .stat:nth-child(1) { background: var(--tomato); color: var(--paper); box-shadow: var(--pop); }
+  .stat-k { font: 700 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; opacity: .8; margin-bottom: 10px; }
+  .stat-v { font: 400 clamp(32px, 4vw, 44px)/1 var(--display); font-variant-numeric: tabular-nums; }
+  .stat-v small { font: 700 14px/1 var(--mono); margin-left: 4px; }
+  .stat-n { font-size: 14px; margin-top: 8px; opacity: .85; }
+
+  /* ---------- sections ---------- */
+  section { padding-block: clamp(56px, 8vw, 96px) 0; }
+  .sec-head { display: flex; align-items: end; justify-content: space-between; gap: 16px 32px; flex-wrap: wrap; margin-bottom: 28px; }
+  h2 { font: 400 clamp(40px, 6vw, 72px)/.9 var(--display); margin: 0; text-wrap: balance; }
+  .sec-head p { max-width: 44ch; margin: 0; color: var(--plum-soft); }
+
+  .gut { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); border: var(--line); border-radius: 22px; overflow: hidden; background: var(--paper); }
+  .gut li { padding: 22px 18px 24px; border-right: var(--line); }
+  .gut li:last-child { border-right: 0; background: var(--mustard); }
+  .gut .n { font: 400 44px/1 var(--display); color: var(--tomato); -webkit-text-stroke: 2px var(--plum); paint-order: stroke fill; }
+  .gut h3 { font: 800 19px/1.15 var(--body); margin: 12px 0 8px; }
+  .gut p { margin: 0; font-size: 15px; line-height: 1.45; }
+  .egg-note { margin-top: 18px; display: flex; gap: 14px; align-items: flex-start; background: var(--gum-2); border-radius: 16px; padding: 16px 18px; font-size: 15px; }
+  .egg-note b { font-family: var(--display); font-weight: 400; font-size: 18px; white-space: nowrap; }
+
+  /* ---------- evolution lab ---------- */
+  .lab { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 4vw, 48px); align-items: center; background: var(--paper); border: var(--line); border-radius: 28px; padding: clamp(18px, 3vw, 36px); box-shadow: var(--pop); }
+  .lab-mon { max-width: 440px; width: 100%; justify-self: center; }
+  .lab-info { display: grid; gap: 14px; align-content: center; }
+  .lab-name { font: 400 clamp(44px, 6vw, 68px)/.9 var(--display); color: var(--tomato); -webkit-text-stroke: 2.5px var(--plum); paint-order: stroke fill; margin: 0; }
+  .lab-req { font: 700 13px/1.3 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+  .lab-desc { margin: 0; max-width: 40ch; }
+  .snack-track { height: 22px; border: var(--line); border-radius: 999px; background: var(--gum); overflow: hidden; }
+  .snack-fill { height: 100%; width: 0; background: repeating-linear-gradient(-45deg, var(--mustard) 0 12px, #ffd46e 12px 24px); border-right: var(--line); transition: width .35s cubic-bezier(.3,1.5,.5,1); }
+  .snack-cap { font: 700 13px/1.3 var(--mono); margin-top: 6px; }
+  .lab-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 26px; }
+  .st { font: inherit; color: inherit; text-align: left; cursor: pointer; border: var(--line); border-radius: 18px; background: var(--paper); padding: 12px 14px 14px; display: grid; gap: 6px; align-content: start; transition: transform .15s, box-shadow .15s; }
+  .st:hover { transform: translateY(-3px); }
+  .st.later { background: var(--gum-2); }
+  .st.later svg { opacity: .7; }
+  .st.real { background: var(--tomato); color: var(--paper); }
+  .st.viewing { box-shadow: var(--pop); transform: translateY(-5px); }
+  .st svg { width: 100%; height: auto; aspect-ratio: 1; overflow: visible; }
+  .st:hover .bob { animation: bob 1.2s ease-in-out infinite; }
+  .st-name { font: 400 20px/1 var(--display); }
+  .st-req { font: 700 11px/1.3 var(--mono); letter-spacing: .04em; }
+  .st-pill { justify-self: start; font: 700 10px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; background: var(--plum); color: var(--mustard); padding: 5px 7px; border-radius: 999px; }
+  .meter { margin-top: 26px; }
+  .meter-label { font: 700 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; color: var(--plum-soft); }
+  .meter-track { height: 26px; border: var(--line); border-radius: 999px; background: var(--paper); overflow: hidden; }
+  .meter-fill { height: 100%; width: 0; background: repeating-linear-gradient(-45deg, var(--tomato) 0 14px, #ff7355 14px 28px); border-right: var(--line); transition: width 1.2s cubic-bezier(.3,1.3,.5,1); }
+  .meter-cap { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font: 700 13px/1.3 var(--mono); flex-wrap: wrap; }
+
+  /* ---------- feeding log + dev plate ---------- */
+  .split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 28px; align-items: start; }
+  .receipt {
+    background: #fffdf6; font: 400 14px/1.5 var(--mono); padding: 24px 22px 34px; border: var(--line); border-bottom: 0; --z: 14px;
+    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--z) 100%;
+            mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--z) 100%;
+  }
+  .rc-head { text-align: center; border-bottom: 2px dashed var(--plum); padding-bottom: 14px; margin-bottom: 10px; }
+  .rc-head b { font: 400 26px/1 var(--display); display: block; margin-bottom: 6px; }
+  .rc-scroll { overflow-x: auto; }
+  .rc-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 420px; }
+  .rc-table th { text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--plum-soft); padding: 6px 4px; }
+  .rc-table td { padding: 7px 4px; border-top: 1px dotted #c9a9c4; }
+  .rc-table .num { text-align: right; }
+  .rc-table a { text-decoration-style: dotted; }
+  .rc-total { display: flex; justify-content: space-between; border-top: 2px dashed var(--plum); margin-top: 10px; padding-top: 12px; font-weight: 700; font-size: 16px; }
+  .rc-foot { text-align: center; margin-top: 16px; font-size: 12px; color: var(--plum-soft); }
+  .plate { background: var(--plum); color: var(--gum); border-radius: 26px; padding: 26px; display: grid; gap: 16px; }
+  .plate h3 { font: 400 34px/1 var(--display); margin: 0; color: var(--paper); }
+  .plate svg { width: 100%; max-width: 280px; justify-self: center; }
+  .plate dl { margin: 0; display: grid; gap: 10px; }
+  .plate dl div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed #6b4270; padding-bottom: 8px; }
+  .plate dt { font-size: 15px; }
+  .plate dd { margin: 0; font: 700 15px/1.4 var(--mono); color: var(--mustard); text-align: right; }
+  .plate .wallet { font: 400 12px/1.5 var(--mono); word-break: break-all; color: var(--gum-2); }
+  .plate .btn { justify-self: start; }
+
+  .faq { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  details { background: var(--paper); border: var(--line); border-radius: 18px; }
+  summary { cursor: pointer; list-style: none; padding: 18px 20px; font: 800 18px/1.3 var(--body); display: flex; justify-content: space-between; gap: 12px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; font: 400 26px/.8 var(--display); color: var(--tomato); }
+  details[open] summary::after { content: "–"; }
+  details p { margin: 0; padding: 0 20px 18px; max-width: 60ch; }
+
+  footer { padding-block: clamp(64px, 9vw, 110px) 40px; }
+  .big-bye { font: 400 clamp(56px, 13vw, 180px)/.82 var(--display); margin: 0 0 26px; color: var(--tomato); -webkit-text-stroke: 3px var(--plum); paint-order: stroke fill; }
+  .foot-row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--plum-soft); border-top: var(--line); padding-top: 18px; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, calc(100% + 60px)); visibility: hidden; background: var(--plum); color: var(--mustard); font: 700 14px/1 var(--mono); padding: 14px 18px; border-radius: 12px; transition: transform .25s; z-index: 60; }
+  .toast.show { transform: translate(-50%, 0); visibility: visible; }
+
+  @media (max-width: 960px) {
+    .gut { grid-template-columns: 1fr 1fr; }
+    .gut li { border-bottom: var(--line); }
+    .gut li:nth-child(2n) { border-right: 0; }
+    .gut li:last-child { grid-column: 1 / -1; border-bottom: 0; }
+    .split { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .hero, .lab { grid-template-columns: 1fr; }
+    .stage-col { max-width: 440px; justify-self: center; width: 100%; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .stages { grid-template-columns: repeat(3, 1fr); }
+    .faq { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .gut { grid-template-columns: 1fr; }
+    .gut li { border-right: 0; }
+    .stages { grid-template-columns: 1fr 1fr; }
+    .nav { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bob, .tail, .charge, .steam circle, .drool, .rays { animation: none !important; }
+    .meter-fill, .snack-fill, .btn, .toast { transition: none; }
+  }
+</style>
+
+<div class="demo" id="demoBanner" hidden>Example numbers. Edit the CONFIG block at the bottom of this file before launch</div>
+
+<div class="wrap">
+  <header class="bar">
+    <a class="logo" href="#top"><span class="logo-dot" aria-hidden="true"></span>$FEEDME</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#digest">How it eats</a>
+      <a href="#lab">Evolution lab</a>
+      <a href="#log">Feeding log</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="bar-end">
+      <button class="snd" type="button" id="sndBtn" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="x" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="sndLabel">Sound on</span>
+      </button>
+      <a class="btn small" id="buyTop" href="#" target="_blank" rel="noopener">Buy on pump.fun</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="hero">
+      <div>
+        <p class="kicker">Meet Gob · a hungry liquidity pool on Solana</p>
+        <h1>FEED <span class="me">ME.</span></h1>
+        <p class="lede">Every creator fee goes <strong>straight into Gob's mouth</strong>, the liquidity pool. The dev gets nothing. Gob gets everything, and every meal makes it grow.</p>
+        <div class="cta">
+          <a class="btn" id="buyHero" href="#" target="_blank" rel="noopener">Feed Gob (buy $FEEDME)</a>
+          <a class="btn ghost" href="#lab">Watch it evolve</a>
+        </div>
+        <div class="ca">
+          <span class="ca-label">CA</span>
+          <code id="caText">—</code>
+          <button type="button" id="copyCa">Copy</button>
+        </div>
+      </div>
+      <div class="stage-col">
+        <div id="heroMon"></div>
+        <div class="feed-hint">Real stage: <b id="heroStage">—</b> · tap Gob to throw a crumb · <b id="crumbCount">0</b> thrown</div>
+      </div>
+    </div>
+
+    <div class="stats" aria-label="Pool stats">
+      <div class="stat"><div class="stat-k">Fed to the pool</div><div class="stat-v"><span id="sFed">0</span><small>SOL</small></div><div class="stat-n">creator fees → liquidity</div></div>
+      <div class="stat"><div class="stat-k">Meals served</div><div class="stat-v" id="sMeals">0</div><div class="stat-n">on-chain feedings, all public</div></div>
+      <div class="stat"><div class="stat-k">LP tokens burned</div><div class="stat-v">100<small>%</small></div><div class="stat-n">what goes in never comes out</div></div>
+      <div class="stat"><div class="stat-k">Dev ate</div><div class="stat-v">0<small>SOL</small></div><div class="stat-n">the dev is fine. probably.</div></div>
+    </div>
+
+    <section id="digest">
+      <div class="sec-head">
+        <h2>How Gob digests</h2>
+        <p>pump.fun pays the dev a small creator fee on every trade. Here, that fee never reaches the dev's pocket. It goes straight to Gob.</p>
+      </div>
+      <ol class="gut">
+        <li><span class="n">1</span><h3>You trade</h3><p>Buy or sell $FEEDME on pump.fun or PumpSwap. Any trade works. Gob doesn't care which way.</p></li>
+        <li><span class="n">2</span><h3>A fee drops</h3><p>The protocol sends the creator fee to the public <b>Stomach Wallet</b>, the only wallet that receives fees.</p></li>
+        <li><span class="n">3</span><h3>It gets chewed</h3><p>Half of the SOL buys $FEEDME, and the other half stays as SOL, so the pool gets a balanced bite.</p></li>
+        <li><span class="n">4</span><h3>Swallowed</h3><p>Both halves get added to the $FEEDME/SOL pool. The LP tokens are burned, so no one can pull that liquidity back out.</p></li>
+        <li><span class="n">5</span><h3>Gob grows</h3><p>A deeper pool means lower price impact on every trade. More trades, more fees, more food. The loop repeats.</p></li>
+      </ol>
+      <div class="egg-note"><b>Egg phase:</b><span>Before graduating from the bonding curve there's no pool to feed yet. Fees wait in the Stomach Wallet (you can check it any time), and the whole stash gets fed in once Gob hatches on PumpSwap.</span></div>
+    </section>
+
+    <section id="lab">
+      <div class="sec-head">
+        <h2>Evolution lab</h2>
+        <p>Gob evolves for real only when SOL gets fed into the pool. In here you can cheat: throw snacks until it transforms, or tap a stage to jump straight to it.</p>
+      </div>
+      <div class="lab">
+        <div class="lab-mon" id="labMon"></div>
+        <div class="lab-info">
+          <p class="kicker" style="margin:0">Now viewing</p>
+          <h3 class="lab-name" id="labName">—</h3>
+          <div class="lab-req" id="labReq">—</div>
+          <p class="lab-desc" id="labDesc">—</p>
+          <div>
+            <div class="snack-track" role="progressbar" aria-label="Snacks until next evolution" aria-valuemin="0" aria-valuemax="100" id="snackTrack"><div class="snack-fill" id="snackFill"></div></div>
+            <div class="snack-cap" id="snackCap">—</div>
+          </div>
+          <div class="lab-btns">
+            <button class="btn" type="button" id="labFeed">Throw a snack</button>
+            <button class="btn ghost" type="button" id="labReset">Back to egg</button>
+          </div>
+        </div>
+      </div>
+      <div class="stages" id="stages"></div>
+      <div class="meter">
+        <div class="meter-label">Real progress (SOL fed on-chain)</div>
+        <div class="meter-track" role="progressbar" aria-label="Real progress to next stage" aria-valuemin="0" aria-valuemax="100" id="meterTrack"><div class="meter-fill" id="meterFill"></div></div>
+        <div class="meter-cap"><span id="meterL">—</span><span id="meterR">—</span></div>
+      </div>
+    </section>
+
+    <section id="log">
+      <div class="sec-head">
+        <h2>Feeding log</h2>
+        <p>Every meal comes with a receipt. If this list ever stops growing while people are still trading, you'll know something's off.</p>
+      </div>
+      <div class="split">
+        <div class="receipt">
+          <div class="rc-head"><b>GOB'S DINER</b>Order history · Stomach Wallet → Pool</div>
+          <div class="rc-scroll">
+            <table class="rc-table">
+              <thead><tr><th>Date</th><th class="num">SOL in</th><th class="num">$FEEDME in</th><th>Receipt</th></tr></thead>
+              <tbody id="logRows"></tbody>
+            </table>
+          </div>
+          <div class="rc-total"><span>TOTAL FED</span><span id="logTotal">0 SOL</span></div>
+          <div class="rc-foot">Tips go to the pool. No refunds. Thank you, come again.</div>
+        </div>
+        <aside class="plate" aria-labelledby="plateH">
+          <h3 id="plateH">Meanwhile, the dev</h3>
+          <svg viewBox="0 0 280 150" aria-hidden="true">
+            <ellipse cx="140" cy="100" rx="128" ry="40" fill="#FFF6F9" stroke="#FFC2D6" stroke-width="4"/>
+            <ellipse cx="140" cy="96" rx="84" ry="24" fill="none" stroke="#FFC2D6" stroke-width="3" stroke-dasharray="6 6"/>
+            <path d="M92 94 C110 84 124 104 140 94 C156 84 170 104 188 94" fill="none" stroke="#FFC53D" stroke-width="4" stroke-linecap="round"/>
+            <text x="140" y="36" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" fill="#FFC2D6">(one noodle. from yesterday.)</text>
+          </svg>
+          <dl>
+            <div><dt>Creator fees kept by dev</dt><dd>0.000 SOL</dd></div>
+            <div><dt>Creator fees fed to Gob</dt><dd id="plateFed">0 SOL</dd></div>
+            <div><dt>Dev dinner tonight</dt><dd>instant noodles</dd></div>
+          </dl>
+          <div>
+            <div style="font-weight:800;margin-bottom:4px;">Stomach Wallet (public)</div>
+            <div class="wallet" id="stomachAddr">—</div>
+          </div>
+          <a class="btn small" id="stomachLink" href="#" target="_blank" rel="noopener">Check it on Solscan</a>
+        </aside>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="sec-head"><h2>Questions from the crowd</h2></div>
+      <div class="faq">
+        <details><summary>Does feeding the pool make the price go up?</summary><p>Not directly. A deeper pool means each trade moves the price less, so it's harder to dump hard and easier to buy big. The step that buys $FEEDME with half the fee does add a little buy pressure. Nothing guarantees number go up. Gob is a monster, not a promise.</p></details>
+        <details><summary>Can the dev just stop feeding it?</summary><p>Technically, yes. pump.fun doesn't force creator fees anywhere, which is exactly why every meal is posted with its tx hash and the Stomach Wallet is public. If the log goes quiet while volume is up, call it out.</p></details>
+        <details><summary>Why burn the LP tokens?</summary><p>Burned LP means the liquidity that was fed in can never be withdrawn by anyone, dev included. Food, once swallowed, stays swallowed.</p></details>
+        <details><summary>How often does Gob eat?</summary><p>The dev claims fees and feeds the pool on a regular schedule (see the log). Tiny amounts wait until they're worth the transaction fees, because Gob hates wasting gas.</p></details>
+        <details><summary>What happens after Kaiju?</summary><p>Nobody knows. Nobody has fed a Gob that much. Its mouth is already charging something.</p></details>
+        <details><summary>Is this financial advice?</summary><p>No. It's a hungry cartoon. Memecoins are extremely risky, so only put in what you're fine losing to a monster.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p class="big-bye">STILL<br>HUNGRY.</p>
+    <div class="foot-row">
+      <span>$FEEDME · a community memecoin on Solana · no roadmap, only appetite</span>
+      <span><a id="xLink" href="#" target="_blank" rel="noopener">X / Twitter</a> · <a id="tgLink" href="#" target="_blank" rel="noopener">Telegram</a></span>
+    </div>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="gob.js"></script>
+<script>
+/* ================== CONFIG: edit before launch ================== */
+const CONFIG = {
+  demo: true,                                   // set false once numbers are real
+  mint: "PASTE_YOUR_MINT_ADDRESSpump",           // $FEEDME contract address
+  stomachWallet: "PASTE_THE_PUBLIC_FEE_WALLET",  // wallet that receives creator fees
+  pumpUrl: "https://pump.fun",                  // link to your coin on pump.fun
+  xUrl: "https://x.com",
+  tgUrl: "https://t.me",
+  graduated: true,                              // false = still on bonding curve (Egg)
+  // example rows, used until the bot writes feedings.json next to this page (newest first)
+  feedings: [
+    { date: "2026-09-23", sol: 3.12, tokens: 1840221, tx: "" },
+    { date: "2026-09-21", sol: 2.47, tokens: 1512900, tx: "" },
+    { date: "2026-09-19", sol: 4.05, tokens: 2701334, tx: "" },
+    { date: "2026-09-17", sol: 1.88, tokens: 1390012, tx: "" },
+    { date: "2026-09-15", sol: 1.32, tokens: 1102748, tx: "" },
+  ],
+};
+/* =============================================================== */
+
+const STAGES = [
+  { name: "Egg",           min: -1,  req: "on the bonding curve",   desc: "Still on the bonding curve. Fees pile up in the Stomach Wallet. Something inside is already chewing." },
+  { name: "Hatchling",     min: 0,   req: "graduated · 0+ SOL fed", desc: "Graduated to PumpSwap and ate its first meal. Wears its own shell as a hat and won't talk about it." },
+  { name: "Chonk",         min: 10,  req: "10+ SOL fed",            desc: "Grew horns. Grew opinions. Now drools at every trade." },
+  { name: "Absolute Unit", min: 50,  req: "50+ SOL fed",            desc: "Wears a bib, brings its own cutlery, and has tusks now. Nobody asked." },
+  { name: "Kaiju",         min: 200, req: "200+ SOL fed",           desc: "Three eyes, one appetite. Something bright is charging in its mouth." },
+];
+const FEED_LINES = [
+  ["*crunch from inside*", "the egg is chewing.", "tap tap. feed.", "...nom?"],
+  ["nom!", "more pls", "tiny tummy, big dreams", "is that SOL? gimme"],
+  ["MORE.", "that was a crumb.", "i am the liquidity now.", "crumbs are not SOL."],
+  ["*tucks in bib*", "appetizer. where's the main?", "fork ready. FEED.", "delicious. insulting. more."],
+  ["ROOAAAR.", "I HUNGER.", "PUNY CRUMB.", "THE POOL GROWS."],
+];
+const EVO_LINES = ["back in the egg??", "IT HATCHED!", "EVOLVED: CHONK!", "EVOLVED: ABSOLUTE UNIT!", "EVOLVED: KAIJU!!!"];
+const SNACKS_TO_EVOLVE = 5;
+
+const $ = (id) => document.getElementById(id);
+const fmt = (n, d = 2) => n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ============================ Gob, alive ============================ */
+/* ============================ sound (Web Audio, no files) ============================ */
+const Sfx = {
+  on: true, unlocked: false, ctx: null, bus: null, lastRoar: 0,
+  init() {
+    try { this.on = localStorage.getItem("feedme-sound") !== "off"; } catch {}
+    // browsers only allow audio after a user gesture; nothing plays before that
+    const unlock = () => { this.unlocked = true; this.ac(); };
+    addEventListener("pointerdown", unlock, { once: true, capture: true });
+    addEventListener("keydown", unlock, { once: true, capture: true });
+  },
+  set(on) { this.on = on; try { localStorage.setItem("feedme-sound", on ? "on" : "off"); } catch {} },
+  ac() {
+    if (!this.ctx) {
+      const A = window.AudioContext || window.webkitAudioContext; if (!A) return null;
+      this.ctx = new A();
+      const comp = this.ctx.createDynamicsCompressor(); comp.connect(this.ctx.destination);
+      this.bus = this.ctx.createGain(); this.bus.gain.value = .8; this.bus.connect(comp);
+    }
+    if (this.ctx.state === "suspended") this.ctx.resume();
+    return this.ctx;
+  },
+  ready() { return this.on && this.unlocked && this.ac(); },
+  noise(ac, dur) {
+    const b = ac.createBuffer(1, Math.ceil(ac.sampleRate * dur), ac.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const n = ac.createBufferSource(); n.buffer = b; return n;
+  },
+  env(ac, t, peak, attack, decay) {
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay);
+    return g;
+  },
+  tone(ac, t, type, f0, f1, dur, peak) {
+    const o = ac.createOscillator(); o.type = type;
+    o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    const g = this.env(ac, t, peak, .008, dur); o.connect(g).connect(this.bus); o.start(t); o.stop(t + dur + .05);
+  },
+  crunch(ac, t, freq, peak) {
+    const n = this.noise(ac, .1), f = ac.createBiquadFilter();
+    f.type = "bandpass"; f.frequency.value = freq; f.Q.value = 1.3;
+    const g = this.env(ac, t, peak, .003, .06 + Math.random() * .03);
+    n.connect(f).connect(g).connect(this.bus); n.start(t); n.stop(t + .12);
+  },
+  // "nom" thump, three crunchy bites, then a gulp. pitch > 1 = smaller mouth
+  chew(pitch = 1) {
+    const ac = this.ready(); if (!ac) return;
+    const t = ac.currentTime + .01;
+    this.tone(ac, t, "sine", 230 * pitch, 85 * pitch, .13, .55);
+    [0.03, 0.14, 0.25].forEach((dt, i) => this.crunch(ac, t + dt + Math.random() * .03, (1500 + Math.random() * 1400) * pitch, .5 - i * .08));
+    this.tone(ac, t + .38, "sine", 170 * pitch, 460 * pitch, .1, .35);
+  },
+  crack() {
+    const ac = this.ready(); if (!ac) return;
+    const t = ac.currentTime + .01;
+    [0, .07, .11].forEach((dt, i) => this.crunch(ac, t + dt, 3800 + i * 600, .45));
+    this.tone(ac, t, "triangle", 900, 500, .05, .12);
+  },
+  // layered detuned saws through distortion, a growl tremolo, a sweeping filter and breathy noise
+  roar() {
+    const ac = this.ready(); if (!ac) return;
+    if (ac.currentTime - this.lastRoar < .6) return;
+    this.lastRoar = ac.currentTime;
+    const t = ac.currentTime + .01, D = 1.7;
+    const shaper = ac.createWaveShaper(), curve = new Float32Array(1024);
+    for (let i = 0; i < 1024; i++) { const x = i / 512 - 1; curve[i] = ((1 + 40) * x) / (1 + 40 * Math.abs(x)); }
+    shaper.curve = curve;
+    const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.Q.value = 5;
+    lp.frequency.setValueAtTime(250, t); lp.frequency.exponentialRampToValueAtTime(1800, t + .3); lp.frequency.exponentialRampToValueAtTime(380, t + D);
+    const growl = ac.createGain(); growl.gain.value = .6;
+    const lfo = ac.createOscillator(), lfoAmt = ac.createGain(); lfo.frequency.value = 27; lfoAmt.gain.value = .4;
+    lfo.connect(lfoAmt).connect(growl.gain);
+    const master = ac.createGain();
+    master.gain.setValueAtTime(0.0001, t); master.gain.exponentialRampToValueAtTime(.9, t + .14);
+    master.gain.setValueAtTime(.9, t + D * .55); master.gain.exponentialRampToValueAtTime(0.0001, t + D);
+    shaper.connect(lp).connect(growl).connect(master).connect(this.bus);
+    [[62, "sawtooth"], [65.5, "sawtooth"], [93, "square"]].forEach(([f, type]) => {
+      const o = ac.createOscillator(); o.type = type;
+      o.frequency.setValueAtTime(f * .8, t); o.frequency.exponentialRampToValueAtTime(f * 1.45, t + .28); o.frequency.exponentialRampToValueAtTime(f * .7, t + D);
+      const g = ac.createGain(); g.gain.value = .32; o.connect(g).connect(shaper); o.start(t); o.stop(t + D + .05);
+    });
+    const n = this.noise(ac, D), bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 700; bp.Q.value = .7;
+    const ng = ac.createGain(); ng.gain.value = .5; n.connect(bp).connect(ng).connect(master); n.start(t); n.stop(t + D);
+    const sub = ac.createOscillator(); sub.type = "sine"; sub.frequency.setValueAtTime(48, t); sub.frequency.exponentialRampToValueAtTime(34, t + D);
+    const sg = ac.createGain(); sg.gain.value = .6; sub.connect(sg).connect(master); sub.start(t); sub.stop(t + D);
+    lfo.start(t); lfo.stop(t + D);
+  },
+  // rising power-up while Gob flickers between forms
+  charge(dur) {
+    const ac = this.ready(); if (!ac) return;
+    const t = ac.currentTime + .01, o = ac.createOscillator(), vib = ac.createOscillator(), va = ac.createGain();
+    o.type = "triangle"; o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(1400, t + dur);
+    vib.frequency.setValueAtTime(6, t); vib.frequency.linearRampToValueAtTime(22, t + dur); va.gain.value = 18;
+    vib.connect(va).connect(o.frequency);
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(.22, t + dur * .8); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + .05);
+    o.connect(g).connect(this.bus); o.start(t); vib.start(t); o.stop(t + dur + .1); vib.stop(t + dur + .1);
+  },
+  // sparkly arpeggio at the moment of evolution
+  sparkle() {
+    const ac = this.ready(); if (!ac) return;
+    const t = ac.currentTime + .01;
+    [523, 659, 784, 1047, 1319, 1568, 2093].forEach((f, i) => {
+      this.tone(ac, t + i * .055, "square", f, f * 1.01, .22, .09);
+      this.tone(ac, t + i * .055, "sine", f * 2, f * 2, .3, .06);
+    });
+    const n = this.noise(ac, .5), hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.setValueAtTime(1500, t); hp.frequency.exponentialRampToValueAtTime(7000, t + .45);
+    const g = this.env(ac, t, .18, .02, .45); n.connect(hp).connect(g).connect(this.bus); n.start(t); n.stop(t + .5);
+  },
+};
+Sfx.init();
+
+class Monster {
+  constructor(mount, stage, { line = "FEED ME.", onTap } = {}) {
+    this.uid = "g" + (++Monster.count);
+    this.stage = stage;
+    this.busy = false;
+    mount.innerHTML = `<div class="mon"><div class="rays" aria-hidden="true"></div><div class="flash" aria-hidden="true"></div>
+      <div class="bubble" aria-live="polite">${line}</div>
+      <svg viewBox="0 0 400 400" role="button" tabindex="0">
+        <ellipse class="shadow" cx="200" cy="384" rx="${SHADOW_RX[stage]}" ry="13" fill="${C.ink}" opacity=".14"/>
+        ${FORMS.map((f, k) => `<g class="form${k === stage ? " on" : ""}" data-stage="${k}"><g class="squash"><g class="bob">${f(this.uid + "s" + k)}</g></g></g>`).join("")}
+      </svg></div>`;
+    this.el = mount.firstElementChild;
+    this.svg = this.el.querySelector("svg");
+    this.bubbleEl = this.el.querySelector(".bubble");
+    this.label();
+    const tap = (e) => (onTap ? onTap(e) : this.feed());
+    this.svg.addEventListener("click", tap);
+    this.svg.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(e); } });
+    addEventListener("pointermove", (e) => { this.px = e.clientX; this.py = e.clientY; if (!this.raf) this.raf = requestAnimationFrame(() => { this.raf = 0; this.look(); }); }, { passive: true });
+    if (!reduce) this.blinkLoop();
+  }
+  label() { this.svg.setAttribute("aria-label", `Gob, ${STAGES[this.stage].name} stage. Press to throw a crumb.`); }
+  form() { return this.svg.querySelector(".form.on"); }
+  show(k) {
+    this.svg.querySelectorAll(".form").forEach((g) => g.classList.toggle("on", +g.dataset.stage === k));
+    this.svg.querySelector(".shadow").setAttribute("rx", SHADOW_RX[k]);
+  }
+  look() {
+    if (this.px == null) return;
+    const box = this.svg.getBoundingClientRect(), k = 400 / box.width;
+    const x = (this.px - box.left) * k, y = (this.py - box.top) * k;
+    this.form().querySelectorAll(".pupil").forEach((p) => {
+      const cx = +p.dataset.cx, cy = +p.dataset.cy, max = +p.dataset.r;
+      const a = Math.atan2(y - cy, x - cx), d = Math.min(max, Math.hypot(x - cx, y - cy) / 6);
+      p.setAttribute("transform", `translate(${r1(Math.cos(a) * d)} ${r1(Math.sin(a) * d)})`);
+    });
+  }
+  async blinkLoop() {
+    for (;;) {
+      await wait(2200 + Math.random() * 2800);
+      if (document.hidden || this.busy) continue;
+      this.form().querySelectorAll(".eye").forEach((e) => e.animate([{ transform: "scaleY(1)" }, { transform: "scaleY(.08)" }, { transform: "scaleY(1)" }], { duration: 170 }));
+    }
+  }
+  say(text) {
+    const b = this.bubbleEl; b.textContent = text;
+    b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
+    setTimeout(() => b.classList.remove("pop"), 220);
+  }
+  particles(n, { kinds = ["coin", "star", "bit"], dist = [110, 220], dur = 900, text } = {}) {
+    for (let i = 0; i < n; i++) {
+      const p = document.createElement("div");
+      p.className = "fx " + (text ? "txt" : kinds[i % kinds.length]);
+      if (text) p.textContent = text;
+      this.el.appendChild(p);
+      const a = text ? -Math.PI / 2 + (Math.random() - .5) * .6 : (i / n) * Math.PI * 2 + Math.random() * .4;
+      const d = dist[0] + Math.random() * (dist[1] - dist[0]);
+      const dx = Math.cos(a) * d, dy = Math.sin(a) * d, rot = (Math.random() - .5) * 540;
+      const base = text ? "translate(-50%, -50%) " : "";
+      p.animate([
+        { transform: `${base}translate(0,0) rotate(0) scale(.4)`, opacity: 1 },
+        { transform: `${base}translate(${dx * .7}px, ${dy * .7}px) rotate(${rot * .7}deg) scale(1.1)`, opacity: 1, offset: .55 },
+        { transform: `${base}translate(${dx}px, ${dy + (text ? 0 : 40)}px) rotate(${rot}deg) scale(.8)`, opacity: 0 },
+      ], { duration: dur + Math.random() * 300, easing: "cubic-bezier(.2,.7,.3,1)" }).onfinish = () => p.remove();
+    }
+  }
+  // throw a SOL crumb from a screen point into the mouth, then chomp
+  async feed(from) {
+    const f = this.form(), m = f.querySelector(".m");
+    if (!reduce) {
+      const mb = m.getBoundingClientRect();
+      const sb = this.el.getBoundingClientRect();
+      from = from || { x: Math.random() < .5 ? sb.left : sb.right, y: sb.bottom - 30 };
+      const tx = mb.left + mb.width / 2 - 17, ty = mb.top + mb.height / 2 - 17, sx = from.x - 17, sy = from.y - 17;
+      const c = document.createElement("div"); c.className = "crumb"; c.textContent = "SOL"; document.body.appendChild(c);
+      await c.animate([
+        { transform: `translate(${sx}px, ${sy}px) rotate(0) scale(1)` },
+        { transform: `translate(${(sx + tx) / 2}px, ${Math.min(sy, ty) - 120}px) rotate(200deg) scale(1.1)`, offset: .5 },
+        { transform: `translate(${tx}px, ${ty}px) rotate(420deg) scale(.4)` },
+      ], { duration: 560, easing: "cubic-bezier(.3,.2,.4,1)" }).finished;
+      c.remove();
+      const big = this.stage === 4;
+      m.animate(this.stage === 0
+        ? [{ transform: "scaleY(1)" }, { transform: "scaleY(1.7)" }, { transform: "scaleY(1)" }]
+        : [{ transform: "scaleY(1)" }, { transform: "scaleY(1.25)", offset: .2 }, { transform: "scaleY(.08)", offset: .5 }, { transform: "scaleY(1)" }], { duration: 380 });
+      f.querySelector(".squash").animate([{ transform: "scale(1,1)" }, { transform: "scale(1.1,.9)", offset: .45 }, { transform: "scale(.96,1.05)", offset: .75 }, { transform: "scale(1,1)" }], { duration: 480, easing: "ease-out" });
+      this.particles(6, { kinds: ["bit", "coin"], dist: [40, 90], dur: 600 });
+      this.particles(1, { text: big ? "+ROAR" : this.stage === 0 ? "+crunch" : "+nom", dist: [90, 120], dur: 900 });
+      if (big) document.querySelector(".wrap").animate([{ transform: "translate(0,0)" }, { transform: "translate(-4px,3px)" }, { transform: "translate(4px,-3px)" }, { transform: "translate(-2px,1px)" }, { transform: "translate(0,0)" }], { duration: 300 });
+    }
+    this.sound();
+    this.say(pick(FEED_LINES[this.stage]));
+  }
+  sound() {
+    if (this.stage === 4) Sfx.roar();
+    else if (this.stage === 0) Sfx.crack();
+    else Sfx.chew([1, 1.5, 1.15, .82][this.stage]);
+  }
+  // full evolution sequence: shake → white silhouette flickering between forms → flash + burst → pop in
+  async evolve(to) {
+    if (this.busy || to === this.stage) return false;
+    this.busy = true;
+    const from = this.stage;
+    this.stage = to;
+    this.label();
+    if (reduce) { this.show(to); Sfx.sparkle(); this.say(to > from ? EVO_LINES[to] : "de-evolved?? rude."); this.busy = false; return true; }
+    this.say(to > from ? "wait... something's happening" : "huh? HUH?");
+    await this.svg.animate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => ({ transform: `translate(${(i % 2 ? -1 : 1) * i * .6}px, 0) rotate(${(i % 2 ? -1 : 1) * i * .25}deg)` })).concat([{ transform: "none" }]), { duration: 700 }).finished;
+    this.el.classList.add("evolving");
+    Sfx.charge(1.35);
+    let cur = from;
+    for (const d of [240, 210, 180, 150, 125, 100, 85, 70, 58, 48, 40, 34]) {
+      cur = cur === from ? to : from;
+      this.show(cur);
+      this.svg.animate([{ transform: "scale(1)" }, { transform: `scale(${cur === to ? 1.08 : .94})` }, { transform: "scale(1)" }], { duration: d });
+      await wait(d);
+    }
+    this.show(to);
+    this.el.querySelector(".flash").animate([{ opacity: 0, transform: "scale(.4)" }, { opacity: 1, transform: "scale(1.1)", offset: .3 }, { opacity: 0, transform: "scale(1.4)" }], { duration: 700, easing: "ease-out" });
+    await wait(120);
+    this.el.classList.remove("evolving");
+    this.particles(22);
+    Sfx.sparkle();
+    if (to === 4) setTimeout(() => Sfx.roar(), 250);
+    await this.svg.animate([{ transform: "scale(.55)" }, { transform: "scale(1.18,.88)", offset: .45 }, { transform: "scale(.94,1.06)", offset: .75 }, { transform: "scale(1)" }], { duration: 680, easing: "cubic-bezier(.3,1.3,.5,1)" }).finished;
+    this.say(to > from ? EVO_LINES[to] : "de-evolved?? rude.");
+    this.busy = false;
+    return true;
+  }
+}
+Monster.count = 0;
+
+/* ============================ live feedings ============================ */
+// The bot writes feedings.json next to this page. When it exists, it replaces the example rows in CONFIG.
+async function loadFeedings() {
+  try {
+    const r = await fetch("feedings.json", { cache: "no-store" });
+    if (!r.ok) return;
+    const list = await r.json();
+    if (Array.isArray(list) && list.length) { CONFIG.feedings = list; CONFIG.graduated = true; CONFIG.demo = false; }
+  } catch {}
+}
+
+loadFeedings().then(() => {
+  /* ============================ page data ============================ */
+  const totalFed = CONFIG.feedings.reduce((s, f) => s + f.sol, 0);
+  const realStage = !CONFIG.graduated ? 0 : STAGES.reduce((i, s, k) => (k > 0 && totalFed >= s.min ? k : i), 1);
+
+  $("demoBanner").hidden = !CONFIG.demo;
+  ["buyTop", "buyHero"].forEach((id) => ($(id).href = CONFIG.pumpUrl));
+  $("xLink").href = CONFIG.xUrl;
+  $("tgLink").href = CONFIG.tgUrl;
+  $("caText").textContent = CONFIG.mint;
+  $("stomachAddr").textContent = CONFIG.stomachWallet;
+  $("stomachLink").href = "https://solscan.io/account/" + CONFIG.stomachWallet;
+  $("sFed").textContent = fmt(totalFed);
+  $("sMeals").textContent = CONFIG.feedings.length;
+  $("plateFed").textContent = fmt(totalFed, 3) + " SOL";
+  $("logTotal").textContent = fmt(totalFed) + " SOL";
+  $("heroStage").textContent = STAGES[realStage].name;
+
+  $("logRows").innerHTML = CONFIG.feedings.map((f) => {
+    const receipt = f.tx
+      ? `<a href="https://solscan.io/tx/${f.tx}" target="_blank" rel="noopener">${f.tx.slice(0, 6)}…${f.tx.slice(-4)}</a>`
+      : `<span style="opacity:.6">example</span>`;
+    return `<tr><td>${f.date}</td><td class="num">${fmt(f.sol)}</td><td class="num">${fmt(f.tokens, 0)}</td><td>${receipt}</td></tr>`;
+  }).join("");
+
+  /* real progress meter */
+  (function meter() {
+    const next = STAGES[realStage + 1];
+    if (!next) { $("meterL").textContent = "Kaiju reached. God help us."; $("meterR").textContent = fmt(totalFed) + " SOL fed"; $("meterFill").style.width = "100%"; return; }
+    const from = Math.max(STAGES[realStage].min, 0);
+    const pct = realStage === 0 ? 0 : Math.min(100, ((totalFed - from) / (next.min - from)) * 100);
+    $("meterL").textContent = `${fmt(totalFed)} SOL fed · ${STAGES[realStage].name}`;
+    $("meterR").textContent = realStage === 0 ? "Hatches when it graduates" : `${fmt(next.min - totalFed)} SOL to ${next.name}`;
+    $("meterTrack").setAttribute("aria-valuenow", Math.round(pct));
+    setTimeout(() => ($("meterFill").style.width = pct + "%"), 200);
+  })();
+
+  /* copy CA */
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+  $("copyCa").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(CONFIG.mint); toast("CA copied. Go feed Gob."); }
+    catch { toast("Couldn't copy. Select the address and copy it by hand."); }
+  });
+
+  function renderSound() {
+    $("sndBtn").setAttribute("aria-pressed", Sfx.on);
+    $("sndLabel").textContent = Sfx.on ? "Sound on" : "Muted";
+  }
+  $("sndBtn").addEventListener("click", () => { Sfx.set(!Sfx.on); renderSound(); if (Sfx.on) Sfx.chew(1.3); });
+  renderSound();
+
+  /* ============================ hero Gob ============================ */
+  let crumbs = 0;
+  const hero = new Monster($("heroMon"), reduce ? realStage : 0, {
+    line: reduce || realStage === 0 ? "FEED ME." : "*crack*",
+    onTap: async () => { if (hero.busy) return; await hero.feed(); crumbs++; $("crumbCount").textContent = crumbs; },
+  });
+  // every visit: Gob hatches out of the egg and grows to its real on-chain size
+  if (!reduce && realStage > 0) wait(900).then(() => hero.evolve(realStage)).then(() => wait(1600)).then(() => hero.say("this is my real size. FEED ME."));
+
+  /* ============================ evolution lab ============================ */
+  let snacks = 0;
+  const lab = new Monster($("labMon"), realStage, { line: "snack?", onTap: () => labFeed() });
+
+  $("stages").innerHTML = STAGES.map((s, k) => `
+    <button class="st" type="button" data-k="${k}" aria-label="Show ${s.name} stage">
+      <svg viewBox="0 0 400 400" aria-hidden="true"><ellipse cx="200" cy="384" rx="${SHADOW_RX[k]}" ry="13" fill="${C.ink}" opacity=".14"/><g class="bob">${FORMS[k]("c" + k)}</g></svg>
+      <span class="st-name">${s.name}</span><span class="st-req">${s.req}</span>
+      ${k === realStage ? `<span class="st-pill">Gob is here</span>` : ""}
+    </button>`).join("");
+
+  function renderLab() {
+    const k = lab.stage, s = STAGES[k];
+    $("labName").textContent = s.name;
+    $("labReq").textContent = (k === realStage ? "Real stage · " : k > realStage ? "Preview · " : "Already passed · ") + s.req;
+    $("labDesc").textContent = s.desc;
+    const max = k === 4;
+    const pct = max ? 100 : (snacks / SNACKS_TO_EVOLVE) * 100;
+    $("snackFill").style.width = pct + "%";
+    $("snackTrack").setAttribute("aria-valuenow", Math.round(pct));
+    $("snackCap").textContent = max ? "MAX FORM. still hungry." : `${snacks}/${SNACKS_TO_EVOLVE} snacks · evolves into ${STAGES[k + 1].name}`;
+    document.querySelectorAll(".st").forEach((b) => {
+      const i = +b.dataset.k;
+      b.classList.toggle("viewing", i === k);
+      b.classList.toggle("real", i === realStage);
+      b.classList.toggle("later", i > realStage);
+      b.setAttribute("aria-pressed", i === k);
+    });
+  }
+  function lockLab(on) { $("labFeed").disabled = on; $("labReset").disabled = on; }
+  async function labEvolve(k) {
+    lockLab(true);
+    snacks = 0;
+    const p = lab.evolve(k);
+    renderLab();
+    await p;
+    lockLab(false);
+  }
+  async function labFeed() {
+    if (lab.busy) return;
+    const b = $("labFeed").getBoundingClientRect();
+    await lab.feed({ x: b.left + b.width / 2, y: b.top });
+    if (lab.stage < 4) snacks++;
+    renderLab();
+    if (lab.stage < 4 && snacks >= SNACKS_TO_EVOLVE) await labEvolve(lab.stage + 1);
+  }
+  $("labFeed").addEventListener("click", labFeed);
+  $("labReset").addEventListener("click", () => labEvolve(0));
+  $("stages").addEventListener("click", (e) => {
+    const b = e.target.closest(".st"); if (!b || lab.busy) return;
+    const r = $("labMon").getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight * .7) $("labMon").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    labEvolve(+b.dataset.k);
+  });
+  renderLab();
+});
+</script>
