@@ -2,6 +2,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FEED ME</title>
 <meta name="description" content="$FEEDME: meet Gob, a hungry liquidity pool on Solana. 100% of creator fees go back into its mouth. The dev eats nothing.">
+<meta name="theme-color" content="#FF5A36">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="$FEEDME">
+<meta property="og:title" content="FEED ME · $FEEDME on Solana">
+<meta property="og:description" content="Meet Gob, a hungry liquidity pool. 100% of creator fees go back into its mouth, LP burned. The dev eats nothing.">
+<meta property="og:url" content="__SITE_URL__/">
+<meta property="og:image" content="__SITE_URL__/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FEED ME · $FEEDME on Solana">
+<meta name="twitter:description" content="Meet Gob, a hungry liquidity pool. 100% of creator fees go back into its mouth, LP burned.">
+<meta name="twitter:image" content="__SITE_URL__/assets/og.png">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;700&display=swap">
@@ -30,8 +45,6 @@
   a { color: inherit; }
   :focus-visible { outline: 3px dashed var(--tomato); outline-offset: 3px; }
   .wrap { max-width: 1120px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); }
-
-  .demo { background: var(--plum); color: var(--mustard); font: 700 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; text-align: center; padding: 8px 16px; }
 
   /* ---------- top bar ---------- */
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 18px; flex-wrap: wrap; }
@@ -253,8 +266,6 @@
   }
 </style>
 
-<div class="demo" id="demoBanner" hidden>Example numbers. Edit the CONFIG block at the bottom of this file before launch</div>
-
 <div class="wrap">
   <header class="bar">
     <a class="logo" href="#top"><span class="logo-dot" aria-hidden="true"></span>$FEEDME</a>
@@ -314,7 +325,7 @@
         <li><span class="n">4</span><h3>Swallowed</h3><p>Both halves get added to the $FEEDME/SOL pool. The LP tokens are burned, so no one can pull that liquidity back out.</p></li>
         <li><span class="n">5</span><h3>Gob grows</h3><p>A deeper pool means lower price impact on every trade. More trades, more fees, more food. The loop repeats.</p></li>
       </ol>
-      <div class="egg-note"><b>Egg phase:</b><span>Before graduating from the bonding curve there's no pool to feed yet. Fees wait in the Stomach Wallet (you can check it any time), and the whole stash gets fed in once Gob hatches on PumpSwap.</span></div>
+      <div class="egg-note"><b>Egg phase:</b><span>Before graduating from the bonding curve there's no pool to feed yet. Fees wait in the Stomach Wallet (you can check it any time), and the whole stash gets fed in once Gob hatches on PumpSwap. <b id="eggNow" hidden></b></span></div>
     </section>
 
     <section id="lab">
@@ -375,6 +386,7 @@
           <dl>
             <div><dt>Creator fees kept by dev</dt><dd>0.000 SOL</dd></div>
             <div><dt>Creator fees fed to Gob</dt><dd id="plateFed">0 SOL</dd></div>
+            <div><dt>Waiting in the vault</dt><dd id="plateWait">0 SOL</dd></div>
             <div><dt>Dev dinner tonight</dt><dd>instant noodles</dd></div>
           </dl>
           <div>
@@ -403,7 +415,7 @@
     <p class="big-bye">STILL<br>HUNGRY.</p>
     <div class="foot-row">
       <span>$FEEDME · a community memecoin on Solana · no roadmap, only appetite</span>
-      <span><a id="xLink" href="#" target="_blank" rel="noopener">X / Twitter</a> · <a id="tgLink" href="#" target="_blank" rel="noopener">Telegram</a></span>
+      <span id="socials">Socials coming at launch</span>
     </div>
   </footer>
 </div>
@@ -412,23 +424,19 @@
 
 <script src="gob.js"></script>
 <script>
-/* ================== CONFIG: edit before launch ================== */
+/* ================== CONFIG ==================
+   With server.js (Railway) everything here is filled in live:
+   /config.json from the env vars MINT, PRIVATE_KEY (public key only), X_URL, TG_URL
+   /status.json and /feedings.json written by the bot.
+   Edit these only if you host this page without server.js. */
 const CONFIG = {
-  demo: true,                                   // set false once numbers are real
-  mint: "PASTE_YOUR_MINT_ADDRESSpump",           // $FEEDME contract address
-  stomachWallet: "PASTE_THE_PUBLIC_FEE_WALLET",  // wallet that receives creator fees
-  pumpUrl: "https://pump.fun",                  // link to your coin on pump.fun
-  xUrl: "https://x.com",
-  tgUrl: "https://t.me",
-  graduated: true,                              // false = still on bonding curve (Egg)
-  // example rows, used until the bot writes feedings.json next to this page (newest first)
-  feedings: [
-    { date: "2026-09-23", sol: 3.12, tokens: 1840221, tx: "" },
-    { date: "2026-09-21", sol: 2.47, tokens: 1512900, tx: "" },
-    { date: "2026-09-19", sol: 4.05, tokens: 2701334, tx: "" },
-    { date: "2026-09-17", sol: 1.88, tokens: 1390012, tx: "" },
-    { date: "2026-09-15", sol: 1.32, tokens: 1102748, tx: "" },
-  ],
+  mint: "",            // $FEEDME contract address
+  stomachWallet: "",   // wallet that receives the creator fees (the coin creator)
+  xUrl: "",
+  tgUrl: "",
+  graduated: false,    // true once the coin is on PumpSwap
+  pendingSol: 0,       // creator fees waiting in the vault
+  feedings: [],        // newest first: { date, sol, tokens, tx }
 };
 /* =============================================================== */
 
@@ -699,41 +707,67 @@ class Monster {
 }
 Monster.count = 0;
 
-/* ============================ live feedings ============================ */
-// The bot writes feedings.json next to this page. When it exists, it replaces the example rows in CONFIG.
-async function loadFeedings() {
-  try {
-    const r = await fetch("feedings.json", { cache: "no-store" });
-    if (!r.ok) return;
-    const list = await r.json();
-    if (Array.isArray(list) && list.length) { CONFIG.feedings = list; CONFIG.graduated = true; CONFIG.demo = false; }
-  } catch {}
+/* ============================ live data ============================ */
+async function getJson(url) {
+  try { const r = await fetch(url, { cache: "no-store" }); return r.ok ? await r.json() : null; } catch { return null; }
+}
+async function loadLive() {
+  const [cfg, status, feedings] = await Promise.all([getJson("config.json"), getJson("status.json"), getJson("feedings.json")]);
+  if (cfg) for (const k of ["mint", "stomachWallet", "xUrl", "tgUrl"]) if (cfg[k]) CONFIG[k] = cfg[k];
+  if (status) { CONFIG.graduated = !!status.graduated; CONFIG.pendingSol = Number(status.pendingSol) || 0; }
+  if (Array.isArray(feedings) && feedings.length) { CONFIG.feedings = feedings; CONFIG.graduated = true; }
 }
 
-loadFeedings().then(() => {
+loadLive().then(() => {
   /* ============================ page data ============================ */
-  const totalFed = CONFIG.feedings.reduce((s, f) => s + f.sol, 0);
+  const totalFed = CONFIG.feedings.reduce((s, f) => s + (Number(f.sol) || 0), 0);
   const realStage = !CONFIG.graduated ? 0 : STAGES.reduce((i, s, k) => (k > 0 && totalFed >= s.min ? k : i), 1);
 
-  $("demoBanner").hidden = !CONFIG.demo;
-  ["buyTop", "buyHero"].forEach((id) => ($(id).href = CONFIG.pumpUrl));
-  $("xLink").href = CONFIG.xUrl;
-  $("tgLink").href = CONFIG.tgUrl;
-  $("caText").textContent = CONFIG.mint;
-  $("stomachAddr").textContent = CONFIG.stomachWallet;
-  $("stomachLink").href = "https://solscan.io/account/" + CONFIG.stomachWallet;
+  if (CONFIG.mint) {
+    ["buyTop", "buyHero"].forEach((id) => ($(id).href = "https://pump.fun/coin/" + CONFIG.mint));
+    $("caText").textContent = CONFIG.mint;
+  } else {
+    // before launch: no fake CA, buttons point to the socials (or stay put)
+    ["buyTop", "buyHero"].forEach((id) => {
+      const a = $(id); a.textContent = "Launching soon";
+      if (CONFIG.xUrl) a.href = CONFIG.xUrl; else { a.href = "#top"; a.removeAttribute("target"); }
+    });
+    $("caText").textContent = "Revealed at launch";
+    $("copyCa").hidden = true;
+  }
+  if (CONFIG.stomachWallet) {
+    $("stomachAddr").textContent = CONFIG.stomachWallet;
+    $("stomachLink").href = "https://solscan.io/account/" + CONFIG.stomachWallet;
+  } else {
+    $("stomachAddr").textContent = "Revealed at launch";
+    $("stomachLink").hidden = true;
+  }
+  const socials = [[CONFIG.xUrl, "X / Twitter"], [CONFIG.tgUrl, "Telegram"]].filter(([u]) => u);
+  if (socials.length) {
+    $("socials").replaceChildren(...socials.flatMap(([u, label], i) => {
+      const a = document.createElement("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; a.textContent = label;
+      return i ? [" · ", a] : [a];
+    }));
+  }
+  $("plateWait").textContent = fmt(CONFIG.pendingSol, 3) + " SOL";
+  if (!CONFIG.graduated && CONFIG.pendingSol > 0) {
+    $("eggNow").hidden = false;
+    $("eggNow").textContent = `Right now: ${fmt(CONFIG.pendingSol, 3)} SOL is waiting to be fed.`;
+  }
   $("sFed").textContent = fmt(totalFed);
   $("sMeals").textContent = CONFIG.feedings.length;
   $("plateFed").textContent = fmt(totalFed, 3) + " SOL";
   $("logTotal").textContent = fmt(totalFed) + " SOL";
   $("heroStage").textContent = STAGES[realStage].name;
 
-  $("logRows").innerHTML = CONFIG.feedings.map((f) => {
-    const receipt = f.tx
-      ? `<a href="https://solscan.io/tx/${f.tx}" target="_blank" rel="noopener">${f.tx.slice(0, 6)}…${f.tx.slice(-4)}</a>`
-      : `<span style="opacity:.6">example</span>`;
-    return `<tr><td>${f.date}</td><td class="num">${fmt(f.sol)}</td><td class="num">${fmt(f.tokens, 0)}</td><td>${receipt}</td></tr>`;
-  }).join("");
+  $("logRows").innerHTML = CONFIG.feedings.length
+    ? CONFIG.feedings.map((f) => {
+        const receipt = f.tx
+          ? `<a href="https://solscan.io/tx/${encodeURIComponent(f.tx)}" target="_blank" rel="noopener">${String(f.tx).slice(0, 6)}…${String(f.tx).slice(-4)}</a>`
+          : "—";
+        return `<tr><td>${String(f.date).replace(/[<>&]/g, "")}</td><td class="num">${fmt(Number(f.sol) || 0)}</td><td class="num">${fmt(Number(f.tokens) || 0, 0)}</td><td>${receipt}</td></tr>`;
+      }).join("")
+    : `<tr><td colspan="4" style="text-align:center;padding:18px 4px;opacity:.75">No meals yet. Gob is still in its egg.</td></tr>`;
 
   /* real progress meter */
   (function meter() {

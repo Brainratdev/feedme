@@ -37,6 +37,7 @@ const CFG = {
   feedingsFile: path.resolve(env("FEEDINGS_FILE", path.join(HERE, "../feedme/feedings.json"))),
   stateFile: path.resolve(env("STATE_FILE", path.join(HERE, ".bot-state.json"))),
 };
+CFG.statusFile = path.resolve(env("STATUS_FILE", path.join(path.dirname(CFG.feedingsFile), "status.json")));
 const CLAIM_MIN = lamports("0.002");   // below this, claiming costs more than it collects
 const RENT_BUFFER = lamports("0.01");  // wSOL + LP token accounts opened during a deposit
 const ONCE = process.argv.includes("--once");
@@ -111,6 +112,24 @@ function saveState(s) {
   fs.writeFileSync(CFG.stateFile, JSON.stringify(s, null, 2));
 }
 
+// Public snapshot for the website: is Gob hatched, and how much food is waiting.
+function writeStatus(graduated, pending) {
+  const status = {
+    updatedAt: new Date().toISOString(),
+    mint: CFG.mint.toBase58(),
+    wallet: me.toBase58(),
+    graduated,
+    pendingSol: Number(sol(pending)),
+    dryRun: CFG.dryRun,
+  };
+  try {
+    fs.mkdirSync(path.dirname(CFG.statusFile), { recursive: true });
+    fs.writeFileSync(CFG.statusFile, JSON.stringify(status, null, 2) + "\n");
+  } catch (e) {
+    log(`⚠️  status.json tidak bisa ditulis: ${e.message}`);
+  }
+}
+
 function recordFeeding(entry) {
   let list = [];
   try { list = JSON.parse(fs.readFileSync(CFG.feedingsFile, "utf8")); } catch {}
@@ -134,6 +153,7 @@ async function round() {
 
   const pending = await pumpSdk.getCreatorVaultBalanceBothPrograms(me);
   log(`🍽️  Fee yang menunggu di creator vault: ${sol(pending)} SOL`);
+  writeStatus(graduated, pending);
 
   if (!graduated) {
     log("🥚 Fase telur: koin belum graduate, jadi belum ada pool untuk disuapi. Fee dibiarkan di vault (tetap terlihat publik).");
