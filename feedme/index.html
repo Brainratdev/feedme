@@ -70,6 +70,9 @@
   .bar-end { display: flex; align-items: center; gap: 10px; }
   .snd { display: inline-flex; align-items: center; gap: 6px; font: 700 13px/1 var(--mono); color: var(--plum); background: var(--paper); border: var(--line); border-radius: 999px; padding: 8px 12px 8px 10px; cursor: pointer; }
   .snd svg { width: 20px; height: 20px; }
+  .xbtn { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--plum); color: var(--paper); border: var(--line); text-decoration: none; transition: transform .12s; }
+  .xbtn:hover { transform: rotate(-8deg) scale(1.08); }
+  .xbtn svg { width: 17px; height: 17px; }
   .snd .x { display: none; }
   .snd[aria-pressed="false"] .x { display: inline; }
   .snd[aria-pressed="false"] .wave { display: none; }
@@ -260,6 +263,10 @@
     .gut li { border-right: 0; }
     .stages { grid-template-columns: 1fr 1fr; }
     .nav { display: none; }
+    .bar { flex-wrap: nowrap; }
+    #buyTop { display: none; }
+    #sndLabel { display: none; }
+    .snd { padding: 8px 10px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .bob, .tail, .charge, .steam circle, .drool, .rays { animation: none !important; }
@@ -277,6 +284,9 @@
       <a href="#faq">FAQ</a>
     </nav>
     <div class="bar-end">
+      <a class="xbtn" id="xTop" href="https://x.com/feedmelana" target="_blank" rel="noopener" aria-label="@feedmelana on X" title="@feedmelana on X">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
       <button class="snd" type="button" id="sndBtn" aria-pressed="true">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="x" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <span id="sndLabel">Sound on</span>
@@ -433,7 +443,7 @@
 const CONFIG = {
   mint: "",            // $FEEDME contract address
   stomachWallet: "",   // wallet that receives the creator fees (the coin creator)
-  xUrl: "",
+  xUrl: "https://x.com/feedmelana",
   graduated: false,    // true once the coin is on PumpSwap
   pendingSol: 0,       // creator fees waiting in the vault
   feedings: [],        // newest first: { date, sol, tokens, tx }
@@ -742,6 +752,7 @@ loadLive().then(() => {
     $("stomachAddr").textContent = "Revealed at launch";
     $("stomachLink").hidden = true;
   }
+  $("xTop").href = CONFIG.xUrl || "https://x.com/feedmelana";
   if (CONFIG.xUrl) {
     const a = document.createElement("a"); a.href = CONFIG.xUrl; a.target = "_blank"; a.rel = "noopener";
     a.textContent = "@" + CONFIG.xUrl.replace(/\/+$/, "").split("/").pop() + " on X";
