@@ -6,7 +6,8 @@
     "start": "node server.js",
     "bot": "node feedme-bot/bot.js",
     "bot:once": "node feedme-bot/bot.js --once",
-    "bot:check": "DRY_RUN=true node feedme-bot/bot.js --once"
+    "bot:check": "DRY_RUN=true node feedme-bot/bot.js --once",
+    "video": "node video/render.mjs"
   },
   "type": "module",
   "dependencies": {
@@ -21,5 +22,8 @@
   "private": true,
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "mp4-muxer": "^5.2.2"
   }
 }

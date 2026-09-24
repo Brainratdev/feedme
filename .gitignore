@@ -4,3 +4,4 @@ node_modules/
 feedme/feedings.json
 .claude/
 .DS_Store
+video/out/
