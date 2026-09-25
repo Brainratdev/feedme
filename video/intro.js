@@ -1,7 +1,14 @@
 /* $FEEDME intro: every frame is a pure function of time t (seconds), drawn as one SVG,
    rasterised to a canvas and encoded with WebCodecs. Audio is synthesised offline. */
 
-const W = 1080, FPS = 30, DUR = 40.5;
+// ?scene=live&ca=<mint> renders the launch-day "WE ARE LIVE" clip instead of the intro
+const Q = new URLSearchParams(location.search);
+const MODE = Q.get("scene") === "live" ? "live" : "intro";
+const CA = (Q.get("ca") || "").replace(/[^1-9A-HJ-NP-Za-km-z]/g, "").slice(0, 44);
+const W = 1080, FPS = 30, DUR = MODE === "live" ? 12 : 40.5;
+const MUSIC = MODE === "live"
+  ? { start: 1.5, hatsFrom: 1.5, pluckFrom: 3.2, ducks: [[3.2, 3.8]] }
+  : { start: 0.9, hatsFrom: 3.4, pluckFrom: 5.2, ducks: [[11.25, 11.9], [30.8, 32.2]] };
 const P = { gum: "#FFD6E4", gum2: "#FFC2D6", paper: "#FFF6F9", ink: "#2B0A2E", soft: "#6B4270", tomato: "#FF5A36", gullet: "#5A0F2E", mustard: "#FFC53D" };
 
 /* ---------------- math ---------------- */
@@ -427,6 +434,91 @@ function scene(t) {
     <g transform="translate(${f1(sx)} ${f1(sy)})">${back}${mid}${g ? drawGob(g) : ""}${front}${overlay}</g>${band}`;
 }
 
+
+/* ---------------- launch day: WE ARE LIVE ---------------- */
+const LIVE_CHOMPS = [6.0, 7.6, 9.2, 10.6];
+const LIVE_GOB = { k: 2, x: 540, y: 960, s: 0.95 };
+function liveScene(t) {
+  let back = "", mid = "", front = "", overlay = "";
+  back += rays(540, 640, 1300, 36, P.gum2, t * 0.45);
+
+  // 3 · 2 · 1
+  ["3", "2", "1"].forEach((n, i) => {
+    const t0 = 0.1 + i * 0.5;
+    if (t < t0 || t >= t0 + 0.5) return;
+    const p = seg(t, t0, t0 + 0.5);
+    front += `<g transform="translate(540 560) scale(${(0.6 + 0.8 * easeOut(p)).toFixed(3)})" opacity="${(1 - easeIn(p)).toFixed(3)}"><text class="tH" text-anchor="middle" y="100" font-size="320" fill="${P.tomato}" stroke="${P.ink}" stroke-width="16" paint-order="stroke fill">${n}</text></g>`;
+  });
+
+  // background coin rain after the slam
+  for (let i = 0; i < 46; i++) {
+    const t0 = 3.3 + i * 0.17, p = seg(t, t0, t0 + 1.7);
+    if (p <= 0 || p >= 1) continue;
+    mid += coin(40 + rnd(i + 3) * 1000, lerp(-60, 1100, p), 20 + rnd(i * 5) * 16, { rot: p * 400 * (rnd(i) - 0.5), op: 0.9 });
+  }
+
+  // Gob: egg drops, shakes, hatches straight into Chonk, then chomps what falls into its mouth
+  let g = null;
+  if (t >= 1.2) {
+    const e = evo(t, 1.7, 0, 2), bob = Math.sin((t * 2 * Math.PI) / 1.2);
+    g = { k: e.k, x: LIVE_GOB.x, y: lerp(-320, LIVE_GOB.y, easeIn(seg(t, 1.2, 1.5))), s: LIVE_GOB.s, look: [0, 0.2], blink: 1 };
+    if (t > 1.5 && t < 1.7) { const q = seg(t, 1.5, 1.7); g.sx = 1 + 0.18 * (1 - q); g.sy = 1 - 0.16 * (1 - q); g.rot = Math.sin(t * 50) * 5; }
+    if (e.shake) g.rot = Math.sin(t * 60) * 6 * e.shake;
+    if (e.white) { g.white = 1; g.s *= e.pulse; }
+    if (e.pop != null) g.s = LIVE_GOB.s * (0.55 + 0.45 * backOut(e.pop));
+    if (t > evoEnd(1.7) + 0.6) { g.y -= 10 * Math.max(0, bob); g.sx = 1 + 0.02 * bob; g.sy = 1 - 0.025 * bob; }
+    for (const ct of LIVE_CHOMPS) {
+      if (t > ct - 0.45 && t < ct) { g.mouth = lerp(1, 1.6, seg(t, ct - 0.45, ct - 0.25)); g.look = [0, -1]; }
+      if (t >= ct && t < ct + 0.4) { const c = seg(t, ct, ct + 0.4); g.mouth = c < 0.5 ? lerp(1.6, 0.1, c * 2) : lerp(0.1, 1, (c - 0.5) * 2); g.sx = 1 + 0.1 * Math.sin(Math.PI * c); g.sy = 1 - 0.1 * Math.sin(Math.PI * c); }
+    }
+    g.blink = blinkAt(t + 30);
+  }
+  const mouth = mouthAt(LIVE_GOB);
+  LIVE_CHOMPS.forEach((ct, i) => {
+    const p = seg(t, ct - 0.8, ct);
+    if (p > 0 && p < 1) { const [x, y] = arc(easeIn(p), [200 + i * 230, -60], mouth, -80); mid += coin(x, y, 34 * (1 - 0.4 * p), { rot: p * 300 }); }
+    if (t > ct && t < ct + 0.8) overlay += burst(t, ct, mouth[0], mouth[1], 8, 60 + i, 150, 0.7);
+  });
+
+  // WE ARE / LIVE!
+  front += txt("WE ARE", 540, 148, { t, t0: 3.0, size: 124 });
+  const slam = seg(t, 3.25, 3.5);
+  if (slam > 0) front += `<g transform="translate(540 342) rotate(-4) scale(${lerp(2.6, 1, easeIn(slam)).toFixed(3)})" opacity="${clamp(slam * 2).toFixed(3)}"><text class="tH" text-anchor="middle" font-size="200" fill="${P.tomato}" stroke="${P.ink}" stroke-width="14" paint-order="stroke fill">LIVE!</text></g>`;
+  front += txt("$FEEDME is live on pump.fun", 540, 402, { t, t0: 4.3, cls: "tB", size: 40 });
+
+  // CA box
+  const caP = seg(t, 5.0, 5.4);
+  if (caP > 0) {
+    const shown = CA || "revealed at launch";
+    front += `<g transform="translate(540 478) scale(${(0.5 + 0.5 * backOut(caP)).toFixed(3)})" opacity="${clamp(caP * 3).toFixed(3)}">
+      <rect x="-510" y="-44" width="1020" height="88" rx="22" fill="${P.paper}" stroke="${P.ink}" stroke-width="6"/>
+      <path d="M-488 -44 H-390 V44 H-488 A22 22 0 0 1 -510 22 V-22 A22 22 0 0 1 -488 -44Z" fill="${P.ink}"/>
+      <text class="tM" x="-450" y="12" text-anchor="middle" font-size="34" fill="${P.mustard}">CA</text>
+      <text class="tM" x="60" y="10" text-anchor="middle" font-size="${shown.length > 40 ? 27 : 32}" fill="${P.ink}">${esc(shown)}</text></g>`;
+  }
+  // what makes it $FEEDME
+  [["100% FEES FEED THE POOL", 293, 6.3], ["LP BURNED", 657, 6.5], ["DEV EATS 0", 904, 6.7]].forEach(([label, x, t0]) => { front += pill(label, x, 574, t, t0, null); });
+
+  overlay += flash(t, evoEnd(1.7), 540, 800) + burst(t, evoEnd(1.7), 540, 800, 24, 71);
+  overlay += burst(t, 3.3, 540, 300, 30, 81, 520, 1.3);
+
+  // ticker
+  let band = `<rect x="0" y="990" width="1080" height="90" fill="${P.ink}"/>`;
+  if (t < 10.4) {
+    const msg = `WE ARE LIVE  ·  $FEEDME  ·  ${CA ? "CA " + CA + "  ·  " : ""}FEEDMESOL.FUN  ·  `;
+    band += `<text class="tM" x="${f1(40 - t * 110)}" y="1046" font-size="30" fill="${P.mustard}">${esc(msg.repeat(6))}</text>`;
+  } else {
+    band += `<g opacity="${seg(t, 10.4, 10.8).toFixed(3)}"><text class="tM" x="540" y="1050" text-anchor="middle" font-size="42" fill="${P.mustard}" letter-spacing="2">feedmesol.fun  ·  @feedmelana</text></g>`;
+  }
+
+  let sx = 0, sy = 0;
+  const shake = (a, b, amp) => { if (t > a && t < b) { const k = amp * (1 - seg(t, a, b)); sx += Math.sin(t * 90) * k; sy += Math.cos(t * 77) * k; } };
+  shake(1.5, 1.8, 10); shake(3.45, 3.95, 18);
+
+  return `<rect width="1080" height="1080" fill="${P.gum}"/>
+    <g transform="translate(${f1(sx)} ${f1(sy)})">${back}${mid}${g ? drawGob(g) : ""}${front}${overlay}</g>${band}`;
+}
+
 /* ---------------- rendering ---------------- */
 var FONT_CSS = "";
 async function loadFonts() {
@@ -452,7 +544,7 @@ const DEFS = `<defs>
     <feMerge><feMergeNode in="g"/><feMergeNode in="g"/><feMergeNode in="w"/></feMerge>
   </filter></defs>`;
 const frameSVG = (t) => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${W}" viewBox="0 0 ${W} ${W}"><style>${FONT_CSS}
-  .tH{font-family:'Bagel Fat One',sans-serif} .tB{font-family:'Bricolage Grotesque',sans-serif;font-weight:800} .tM{font-family:'JetBrains Mono',monospace;font-weight:700}</style>${DEFS}${scene(t)}</svg>`;
+  .tH{font-family:'Bagel Fat One',sans-serif} .tB{font-family:'Bricolage Grotesque',sans-serif;font-weight:800} .tM{font-family:'JetBrains Mono',monospace;font-weight:700}</style>${DEFS}${(MODE === "live" ? liveScene : scene)(t)}</svg>`;
 
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
@@ -473,8 +565,8 @@ function buildAudio() {
   const music = ac.createGain(); music.connect(comp);
   // music level: in after the egg lands, ducked under the stamp and roar, out at the end
   const mg = music.gain;
-  mg.setValueAtTime(0.0001, 0); mg.exponentialRampToValueAtTime(0.5, 1.0);
-  [[11.25, 11.9], [30.8, 32.2]].forEach(([a, b]) => { mg.setValueAtTime(0.5, a); mg.linearRampToValueAtTime(0.14, a + 0.05); mg.setValueAtTime(0.14, b - 0.2); mg.linearRampToValueAtTime(0.5, b); });
+  mg.setValueAtTime(0.0001, 0); mg.setValueAtTime(0.0001, MUSIC.start - 0.1); mg.exponentialRampToValueAtTime(0.5, MUSIC.start + 0.1);
+  MUSIC.ducks.forEach(([a, b]) => { mg.setValueAtTime(0.5, a); mg.linearRampToValueAtTime(0.14, a + 0.05); mg.setValueAtTime(0.14, b - 0.2); mg.linearRampToValueAtTime(0.5, b); });
   mg.setValueAtTime(0.5, DUR - 2); mg.linearRampToValueAtTime(0.0001, DUR - 0.05);
 
   const noiseBuf = (() => { const b = ac.createBuffer(1, SR * 2, SR), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; })();
@@ -494,20 +586,20 @@ function buildAudio() {
   const beat = 0.5, bar = 2;
   const roots = [65.41, 55.0, 43.65, 49.0];
   const arps = [[523.25, 659.25, 783.99, 659.25], [440, 523.25, 659.25, 523.25], [349.23, 440, 523.25, 440], [392, 493.88, 587.33, 493.88]];
-  for (let t0 = 0.9; t0 < DUR - 1.5; t0 += bar) {
-    const c = Math.floor((t0 - 0.9) / bar) % 4;
+  for (let t0 = MUSIC.start; t0 < DUR - 1.5; t0 += bar) {
+    const c = Math.floor((t0 - MUSIC.start) / bar) % 4;
     for (let b = 0; b < 4; b++) {
       const t = t0 + b * beat;
       tone(t, "sine", 150, 45, 0.28, 0.9, music, 0.002);                                            // kick
       if (b % 2 === 1) for (let k = 0; k < 3; k++) noise(t + k * 0.012, 0.14, music, { f: 1500, q: 0.8, peak: 0.28 }); // clap
-      if (t > 3.4) { noise(t + beat / 2, 0.05, music, { type: "highpass", f: 7000, peak: 0.12 }); noise(t, 0.03, music, { type: "highpass", f: 8000, peak: 0.06 }); }
+      if (t >= MUSIC.hatsFrom) { noise(t + beat / 2, 0.05, music, { type: "highpass", f: 7000, peak: 0.12 }); noise(t, 0.03, music, { type: "highpass", f: 8000, peak: 0.06 }); }
       for (let e = 0; e < 2; e++) {                                                                   // bouncy bass
         const f = roots[c] * (e ? 2 : 1), o = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
         o.type = "square"; o.frequency.value = f; lp.type = "lowpass"; lp.frequency.value = 700;
         const tt = t + e * beat / 2; g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.16, tt + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.22);
         o.connect(lp).connect(g).connect(music); o.start(tt); o.stop(tt + 0.25);
       }
-      if (t > 5.2) for (let e = 0; e < 2; e++) tone(t + e * beat / 2, "triangle", arps[c][(b * 2 + e) % 4], arps[c][(b * 2 + e) % 4], 0.22, 0.07, music, 0.004); // pluck
+      if (t >= MUSIC.pluckFrom) for (let e = 0; e < 2; e++) tone(t + e * beat / 2, "triangle", arps[c][(b * 2 + e) % 4], arps[c][(b * 2 + e) % 4], 0.22, 0.07, music, 0.004); // pluck
     }
   }
 
@@ -555,33 +647,47 @@ function buildAudio() {
   const crackle = (t, dur) => { for (let x = t; x < t + dur; x += 0.03 + Math.random() * 0.07) noise(x, 0.03, sfx, { f: 2000 + Math.random() * 3000, q: 2, peak: 0.15 + Math.random() * 0.2 }); noise(t, dur, sfx, { type: "lowpass", f: 500, peak: 0.12, attack: 0.3 }); };
   const stamp = (t) => { thud(t, 1); noise(t, 0.25, sfx, { f: 900, q: 0.6, peak: 0.6 }); };
 
-  // fall whistle, landing, egg cracks, hatching
-  tone(0.05, "sine", 1500, 300, 0.85, 0.12, sfx, 0.05);
-  thud(0.9);
-  crack(1.6); crack(2.05);
-  charge(2.1, FLICK_LEN); sparkle(evoEnd(2.1));
-  pop(3.7, 420); pop(4.1, 520);
-  whoosh(5.15); pop(5.3, 400); pop(5.55, 500); pop(5.8, 300); pop(6.2, 340);
-  clink(6.4); clink(6.85); clink(7.3);
-  whoosh(9.15); pop(9.3, 400); pop(9.55, 480);
-  clink(10.7); clink(10.85); clink(11.0);
-  stamp(11.3);
-  pop(12.15, 420); pop(12.4, 520);
-  chew(13.0, 1.4);
-  whoosh(13.95); pop(14.1, 380);
-  [14.5, 17.3, 20.1, 23.2].forEach((t) => pop(t, 450));
-  clink(15.25); clink(15.65); clink(16.05);
-  pop(17.6, 300); clink(18.7);
-  chew(21.3, 1.3);
-  charge(22.0, FLICK_LEN); sparkle(evoEnd(22.0));
-  pop(23.45, 350); whoosh(24.1); crackle(23.5, 2.2);
-  whoosh(25.95); pop(26.1, 400); pop(26.35, 500);
-  charge(27.0, FLICK_LEN); sparkle(evoEnd(27.0));
-  charge(29.3, FLICK_LEN); sparkle(evoEnd(29.3));
-  roar(30.9);
-  whoosh(32.95); pop(33.1, 380); pop(33.35, 460); pop(34.4, 300);
-  whoosh(35.95); thud(36.15, 0.7); pop(36.5, 500); pop(36.8, 600);
-  chew(37.2, 1.15);
+  if (MODE === "intro") {
+    // fall whistle, landing, egg cracks, hatching
+    tone(0.05, "sine", 1500, 300, 0.85, 0.12, sfx, 0.05);
+    thud(0.9);
+    crack(1.6); crack(2.05);
+    charge(2.1, FLICK_LEN); sparkle(evoEnd(2.1));
+    pop(3.7, 420); pop(4.1, 520);
+    whoosh(5.15); pop(5.3, 400); pop(5.55, 500); pop(5.8, 300); pop(6.2, 340);
+    clink(6.4); clink(6.85); clink(7.3);
+    whoosh(9.15); pop(9.3, 400); pop(9.55, 480);
+    clink(10.7); clink(10.85); clink(11.0);
+    stamp(11.3);
+    pop(12.15, 420); pop(12.4, 520);
+    chew(13.0, 1.4);
+    whoosh(13.95); pop(14.1, 380);
+    [14.5, 17.3, 20.1, 23.2].forEach((t) => pop(t, 450));
+    clink(15.25); clink(15.65); clink(16.05);
+    pop(17.6, 300); clink(18.7);
+    chew(21.3, 1.3);
+    charge(22.0, FLICK_LEN); sparkle(evoEnd(22.0));
+    pop(23.45, 350); whoosh(24.1); crackle(23.5, 2.2);
+    whoosh(25.95); pop(26.1, 400); pop(26.35, 500);
+    charge(27.0, FLICK_LEN); sparkle(evoEnd(27.0));
+    charge(29.3, FLICK_LEN); sparkle(evoEnd(29.3));
+    roar(30.9);
+    whoosh(32.95); pop(33.1, 380); pop(33.35, 460); pop(34.4, 300);
+    whoosh(35.95); thud(36.15, 0.7); pop(36.5, 500); pop(36.8, 600);
+    chew(37.2, 1.15);
+  } else {
+    // countdown, drop, hatch, slam, then a steady coin rain Gob keeps chomping
+    [0.1, 0.6, 1.1].forEach((t) => tone(t, "sine", 880, 880, 0.16, 0.35, sfx, 0.004));
+    tone(1.5, "sine", 1500, 300, 0.3, 0.1, sfx, 0.02);
+    thud(1.5); crack(1.6);
+    charge(1.7, FLICK_LEN); sparkle(evoEnd(1.7));
+    whoosh(2.95); pop(3.0, 420); stamp(3.25);
+    pop(4.3, 500); pop(5.0, 380);
+    [6.3, 6.5, 6.7].forEach((t, i) => pop(t, 450 + i * 90));
+    for (let t = 3.4; t < DUR - 1; t += 0.22 + Math.random() * 0.2) tone(t, "sine", 2100 + Math.random() * 500, 2000, 0.15, 0.05, sfx, 0.002);
+    LIVE_CHOMPS.forEach((t) => chew(t, 1.15));
+    sparkle(10.6);
+  }
   return ac.startRendering();
 }
 

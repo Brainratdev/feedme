@@ -2,6 +2,7 @@
 // Puts the freshly launched coin live everywhere: sets MINT on Railway, deploys, checks that the
 // Railway wallet is really the coin's creator, waits for the bot's first round, then prints the
 // launch post and bio with the CA filled in.
+import { spawnSync } from "node:child_process";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { PUMP_SDK, bondingCurvePda, hasCoinCreatorMigratedToSharingConfig } from "@pump-fun/pump-sdk";
 import { getVars, setVars, redeployLatestCommit } from "./railway.mjs";
@@ -77,6 +78,11 @@ while (Date.now() < until2) {
 if (status?.mint === CA) console.log(`\n  ✅ bot jalan · ${status.graduated ? "graduated" : "Egg"} · ${status.pendingSol} SOL menunggu di vault · ${status.dryRun ? "DRY RUN" : "LIVE"}`);
 else console.log("\n  ⚠️ bot belum melapor. Cek log: railway logs --service feedme");
 
+step("Render konten WE ARE LIVE dengan CA");
+const r = spawnSync(process.execPath, ["video/render.mjs", "live", CA], { stdio: ["ignore", "ignore", "inherit"] });
+const media = r.status === 0 ? "video/out/feedme-live.mp4 + video/out/feedme-live.png" : null;
+console.log(media ? `  ✅ ${media}` : "  ⚠️ render gagal; jalankan ulang: npm run video -- live " + CA);
+
 console.log(`
 ════════════════════════════════════════════════════════
  🎉 $FEEDME LIVE
@@ -86,14 +92,31 @@ console.log(`
  Solscan  : https://solscan.io/token/${CA}
  Wallet   : https://solscan.io/account/${creator}
 
-── Post X (pin postingan ini) ───────────────────────────
-Gob has hatched. $FEEDME is live on pump.fun 👾
+── Post X (pin postingan ini${media ? ", lampirkan video/out/feedme-live.mp4" : ""}) ───
+WE ARE LIVE 👾
+
+$FEEDME is on pump.fun and Gob is hungry.
 
 CA: ${CA}
 
-100% of creator fees go back into the pool. LP burned. The dev eats nothing.
+Every creator fee goes back into the pool. LP burned. The dev eats nothing.
 
-Feed it: ${SITE.replace(/^https?:\/\//, "")}
+${SITE.replace(/^https?:\/\//, "")}
+
+── Balasan 1 ────────────────────────────────────────────
+Don't trust, verify:
+
+• The Stomach Wallet is public on ${SITE.replace(/^https?:\/\//, "")}
+• Every meal gets tx links: claim → buy → add liquidity → LP burn
+• The bot is open source: github.com/Brainratdev/feedme
+
+── Balasan 2 ────────────────────────────────────────────
+${curve.complete ? "Gob already graduated to PumpSwap, so every creator fee now goes straight into the pool.\n\nWatch every meal live: " + SITE.replace(/^https?:\/\//, "") : "Right now Gob is an egg 🥚\n\nFees stack up in the vault until $FEEDME graduates to PumpSwap. Then the first meal is served and Gob hatches.\n\nWatch it happen live: " + SITE.replace(/^https?:\/\//, "")}
+
+── Balasan 3 ────────────────────────────────────────────
+⚠️ There is only one CA: in this post, in our bio and on ${SITE.replace(/^https?:\/\//, "")}.
+
+Anything else is fake. The dev will never DM you.
 
 ── Bio X ────────────────────────────────────────────────
 $FEEDME 👾 100% of creator fees feed the pool, LP burned. Dev eats 0.

@@ -46,7 +46,18 @@ Launch dari **wallet yang sama** dengan `PRIVATE_KEY` di Railway.
 
    Skrip ini mengisi `MINT` di Railway, men-deploy, memastikan wallet di Railway memang creator koin, menunggu ronde pertama bot, lalu mencetak **post X dan bio yang sudah berisi CA**.
    Kalau cuma mau mengecek CA tanpa mengubah apa pun: `npm run launch -- <CA> --check`.
-3. Posting teks dari skrip, **pin** postingannya, dan ganti bio X.
+   Skrip juga me-render **konten WE ARE LIVE dengan CA asli** (±1 menit):
+   `video/out/feedme-live.mp4` (video 12 detik) dan `video/out/feedme-live.png` (gambar).
+3. Posting **post utama + lampirkan `feedme-live.mp4`**, lalu balasan 1–3 sebagai thread (semua teks dicetak skrip, CA sudah terisi).
+4. **Pin** post utama dan ganti bio X.
+
+Isi thread WE ARE LIVE:
+- Post utama: WE ARE LIVE + CA + ringkasan mekanisme + feedmesol.fun
+- Balasan 1: "Don't trust, verify" (Stomach Wallet publik, tx link tiap suapan, repo open source)
+- Balasan 2: status Gob (masih telur / sudah graduate)
+- Balasan 3: peringatan CA palsu
+
+`video/out/feedme-live-PREVIEW.*` hanya pratinjau tanpa CA, **jangan diposting**.
 
 ## 4. Setelah graduate ke PumpSwap
 
