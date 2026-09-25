@@ -49,13 +49,14 @@ await withPage(url, async (ev) => {
   const size = await ev("window.__mp4.length");
   const parts = [];
   for (let a = 0; a < size; a += 2_000_000) parts.push(Buffer.from(await ev(`mp4Slice(${a}, ${a + 2_000_000})`), "base64"));
-  const file = path.join(OUT, scene === "live" ? "feedme-live.mp4" : "feedme-intro.mp4");
+  const base = scene === "live" ? (ca ? "feedme-live" : "feedme-live-noca") : "feedme-intro";
+  const file = path.join(OUT, `${base}.mp4`);
   fs.writeFileSync(file, Buffer.concat(parts));
   console.log(`\nwrote ${file} (${(size / 1e6).toFixed(1)} MB)`);
   if (scene === "live") {
     // the last frame doubles as the launch image
     const png = await ev(`(async () => { await draw(11.7); return document.getElementById("c").toDataURL("image/png"); })()`);
-    const img = path.join(OUT, "feedme-live.png");
+    const img = path.join(OUT, `${base}.png`);
     fs.writeFileSync(img, Buffer.from(png.split(",")[1], "base64"));
     console.log(`wrote ${img}`);
   }

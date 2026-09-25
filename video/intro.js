@@ -486,10 +486,10 @@ function liveScene(t) {
   if (slam > 0) front += `<g transform="translate(540 342) rotate(-4) scale(${lerp(2.6, 1, easeIn(slam)).toFixed(3)})" opacity="${clamp(slam * 2).toFixed(3)}"><text class="tH" text-anchor="middle" font-size="200" fill="${P.tomato}" stroke="${P.ink}" stroke-width="14" paint-order="stroke fill">LIVE!</text></g>`;
   front += txt("$FEEDME is live on pump.fun", 540, 402, { t, t0: 4.3, cls: "tB", size: 40 });
 
-  // CA box
+  // CA box, only when a CA was given; without one the labels move up into its place
   const caP = seg(t, 5.0, 5.4);
-  if (caP > 0) {
-    const shown = CA || "revealed at launch";
+  if (caP > 0 && CA) {
+    const shown = CA;
     front += `<g transform="translate(540 478) scale(${(0.5 + 0.5 * backOut(caP)).toFixed(3)})" opacity="${clamp(caP * 3).toFixed(3)}">
       <rect x="-510" y="-44" width="1020" height="88" rx="22" fill="${P.paper}" stroke="${P.ink}" stroke-width="6"/>
       <path d="M-488 -44 H-390 V44 H-488 A22 22 0 0 1 -510 22 V-22 A22 22 0 0 1 -488 -44Z" fill="${P.ink}"/>
@@ -497,7 +497,7 @@ function liveScene(t) {
       <text class="tM" x="60" y="10" text-anchor="middle" font-size="${shown.length > 40 ? 27 : 32}" fill="${P.ink}">${esc(shown)}</text></g>`;
   }
   // what makes it $FEEDME
-  [["100% FEES FEED THE POOL", 293, 6.3], ["LP BURNED", 657, 6.5], ["DEV EATS 0", 904, 6.7]].forEach(([label, x, t0]) => { front += pill(label, x, 574, t, t0, null); });
+  [["100% FEES FEED THE POOL", 293, 6.3], ["LP BURNED", 657, 6.5], ["DEV EATS 0", 904, 6.7]].forEach(([label, x, t0]) => { front += pill(label, x, CA ? 574 : 490, t, t0, null); });
 
   overlay += flash(t, evoEnd(1.7), 540, 800) + burst(t, evoEnd(1.7), 540, 800, 24, 71);
   overlay += burst(t, 3.3, 540, 300, 30, 81, 520, 1.3);

@@ -57,7 +57,7 @@ Isi thread WE ARE LIVE:
 - Balasan 2: status Gob (masih telur / sudah graduate)
 - Balasan 3: peringatan CA palsu
 
-`video/out/feedme-live-PREVIEW.*` hanya pratinjau tanpa CA, **jangan diposting**.
+`video/out/feedme-live-noca.*` adalah versi tanpa CA (tanpa kotak CA), aman diposting kapan saja.
 
 ## 4. Setelah graduate ke PumpSwap
 
