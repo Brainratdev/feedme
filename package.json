@@ -23,7 +23,7 @@
   },
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
   },
   "devDependencies": {
     "mp4-muxer": "^5.2.2"
