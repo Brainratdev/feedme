@@ -75,9 +75,9 @@ Setiap baris di log berisi link tx deposit (`tx`), tx beli (`buyTx`), dan tx bak
 | `DRY_RUN` | `true` | `true` = simulasi saja |
 | `INTERVAL_MINUTES` | `60` | Jarak antar ronde |
 | `MIN_FEED_SOL` | `0.1` | Minimal SOL per suapan, supaya biaya transaksi tidak sia-sia |
-| `MAX_FEED_SOL` | `5` | Maksimal per ronde; sisanya disuapkan di ronde berikutnya |
+| `MAX_FEED_SOL` | `2` | Maksimal per ronde; sisanya disuapkan di ronde berikutnya |
 | `RESERVE_SOL` | `0.03` | SOL yang selalu disisakan untuk gas |
-| `SLIPPAGE_PCT` | `3` | Toleransi slippage saat beli dan deposit |
+| `SLIPPAGE_PCT` | `2` | Toleransi slippage saat beli dan deposit |
 
 ## Kalau ada yang gagal di tengah jalan
 

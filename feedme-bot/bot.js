@@ -11,7 +11,7 @@ import {
 } from "@solana/web3.js";
 import { createBurnInstruction, getAccount, getMint, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { OnlinePumpAmmSdk, PUMP_AMM_SDK, buyQuoteInput, canonicalPumpPoolPda } from "@pump-fun/pump-swap-sdk";
-import { OnlinePumpSdk, PUMP_SDK, bondingCurvePda } from "@pump-fun/pump-sdk";
+import { OnlinePumpSdk, PUMP_SDK, bondingCurvePda, hasCoinCreatorMigratedToSharingConfig } from "@pump-fun/pump-sdk";
 
 /* ---------------- config ---------------- */
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -28,9 +28,9 @@ const CFG = {
   rpc: env("RPC_URL", "https://api.mainnet-beta.solana.com"),
   mint: new PublicKey(need("MINT")),
   minFeed: lamports(env("MIN_FEED_SOL", "0.1")),     // don't feed less than this per round
-  maxFeed: lamports(env("MAX_FEED_SOL", "5")),       // cap per round to limit price impact
+  maxFeed: lamports(env("MAX_FEED_SOL", "2")),       // cap per round: limits price impact and MEV exposure on a young pool
   reserve: lamports(env("RESERVE_SOL", "0.03")),     // always left in the wallet for tx fees and rent
-  slippage: Number(env("SLIPPAGE_PCT", "3")),        // percent, 3 = 3%
+  slippage: Number(env("SLIPPAGE_PCT", "2")),        // percent, 2 = 2%
   intervalMin: Number(env("INTERVAL_MINUTES", "60")),
   eggIntervalMin: Number(env("EGG_INTERVAL_MINUTES", "5")), // before graduation: cheap checks, so the site and the first meal stay fresh
   priorityFee: Number(env("PRIORITY_FEE_MICROLAMPORTS", "50000")),
@@ -146,11 +146,26 @@ async function round() {
   const bcInfo = await conn.getAccountInfo(bondingCurvePda(CFG.mint));
   if (!bcInfo) throw new Error("Bonding curve tidak ditemukan. Cek lagi MINT di .env.");
   const curve = PUMP_SDK.decodeBondingCurve(bcInfo);
+  if (curve.isCashbackCoin) throw new Error("Koin ini cashback coin: pump.fun tidak memberi creator fee sama sekali, jadi tidak ada yang bisa disuapkan.");
+  if (hasCoinCreatorMigratedToSharingConfig({ mint: CFG.mint, creator: curve.creator })) {
+    throw new Error("Creator fee koin ini sudah dialihkan ke fee sharing config pump.fun, jadi tidak masuk ke wallet ini. Nonaktifkan fee sharing di pump.fun.");
+  }
   if (!curve.creator.equals(me)) {
     throw new Error(`Wallet ini (${me.toBase58()}) bukan creator koin ini (${curve.creator.toBase58()}). Creator fee tidak masuk ke wallet ini.`);
   }
   const poolKey = canonicalPumpPoolPda(CFG.mint);
-  const graduated = curve.complete && !!(await conn.getAccountInfo(poolKey));
+  const poolInfo = await conn.getAccountInfo(poolKey);
+  const graduated = curve.complete && !!poolInfo;
+  if (graduated) {
+    // after graduation the PumpSwap pool decides who receives creator fees
+    const coinCreator = PUMP_AMM_SDK.decodePool(poolInfo).coinCreator;
+    if (!coinCreator.equals(me)) {
+      const shared = hasCoinCreatorMigratedToSharingConfig({ mint: CFG.mint, creator: coinCreator });
+      throw new Error(shared
+        ? "Creator fee di pool PumpSwap sudah dialihkan ke fee sharing config, jadi tidak masuk ke wallet ini. Nonaktifkan fee sharing di pump.fun."
+        : `Creator fee di pool PumpSwap masuk ke ${coinCreator.toBase58()}, bukan wallet ini.`);
+    }
+  }
 
   const pending = await pumpSdk.getCreatorVaultBalanceBothPrograms(me);
   log(`🍽️  Fee yang menunggu di creator vault: ${sol(pending)} SOL`);
@@ -242,6 +257,9 @@ async function round() {
     quoteIn = quoteBudget.muln(100).divn(100 + CFG.slippage);
     dep = PUMP_AMM_SDK.depositQuoteInput(liq, quoteIn, CFG.slippage);
   }
+  // tiny absolute margins so the program's rounding never trips the slippage check
+  dep.maxQuote = dep.maxQuote.addn(5_000);
+  dep.maxBase = dep.maxBase.addn(1_000);
   const baseIn = dep.base ?? base;
   log(`😋 Menelan: ${units(baseIn, baseMint.decimals).toLocaleString()} token + ${sol(quoteIn)} SOL → pool (≈ ${dep.lpToken.toString()} LP)`);
 

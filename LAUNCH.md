@@ -28,6 +28,13 @@ Meet Gob, a hungry liquidity pool. 100% of creator fees go back into the $FEEDME
 
 Launch dari **wallet yang sama** dengan `PRIVATE_KEY` di Railway.
 
+⚠️ Saat create coin, **jangan aktifkan**:
+- **Cashback**: koin cashback tidak punya creator fee sama sekali, jadi Gob tidak akan pernah makan.
+- **Fee sharing / creator reward split**: fee akan dialihkan dan tidak masuk ke wallet bot.
+- **Mayhem mode**: belum diuji dengan bot ini.
+
+`npm run launch` mengecek ketiganya dan berhenti kalau ada yang aktif.
+
 ## 3. Saat launch (±3 menit)
 
 1. Create coin di pump.fun, copy CA-nya.
@@ -45,7 +52,8 @@ Launch dari **wallet yang sama** dengan `PRIVATE_KEY` di Railway.
 
 Sebelum graduate bot memang belum bertransaksi (fase telur: fee menumpuk di vault dan web menampilkan jumlahnya).
 
-1. Tunggu satu ronde setelah graduate, lalu cek log simulasi: `railway logs --service feedme`
-   (harus ada "simulasi klaim fee OK" dan "simulasi beli OK").
+1. Tunggu satu ronde setelah graduate (maksimal 5 menit), lalu cek log simulasi: `railway logs --service feedme`.
+   Yang harus ada: "simulasi klaim fee OK" dan rencana angka beli/deposit/bakar LP.
+   "simulasi beli dilewati: SOL-nya masih di vault" itu **normal** di dry run, karena klaimnya cuma simulasi.
 2. Aktifkan mode live: `railway variable set DRY_RUN=false --service feedme`
 3. Awasi ronde live pertama di Solscan: klaim → beli → deposit → **bakar LP**.

@@ -3,7 +3,7 @@
 // Railway wallet is really the coin's creator, waits for the bot's first round, then prints the
 // launch post and bio with the CA filled in.
 import { Connection, PublicKey } from "@solana/web3.js";
-import { PUMP_SDK, bondingCurvePda } from "@pump-fun/pump-sdk";
+import { PUMP_SDK, bondingCurvePda, hasCoinCreatorMigratedToSharingConfig } from "@pump-fun/pump-sdk";
 import { getVars, setVars, redeployLatestCommit } from "./railway.mjs";
 
 const args = process.argv.slice(2);
@@ -36,6 +36,10 @@ for (let i = 0; i < 10 && !curve; i++) {
 if (!curve) die(`Tidak ada bonding curve pump.fun untuk ${CA}. Pastikan CA-nya benar.`);
 const creator = curve.creator.toBase58();
 console.log(`  koin ditemukan · creator ${creator} · ${curve.complete ? "sudah graduate" : "masih di bonding curve (Egg)"}`);
+if (curve.isCashbackCoin) die("Koin ini dibuat sebagai CASHBACK coin: pump.fun tidak memberi creator fee, jadi Gob tidak akan pernah makan. Konsep $FEEDME butuh koin tanpa cashback.");
+if (hasCoinCreatorMigratedToSharingConfig({ mint, creator: curve.creator })) die("Creator fee koin ini sudah dialihkan ke FEE SHARING pump.fun, jadi tidak masuk ke wallet bot. Nonaktifkan fee sharing dulu.");
+if (curve.isMayhemMode) console.log("  ⚠️ Koin ini memakai Mayhem mode. Bot belum diuji untuk mode ini; awasi ronde pertama baik-baik.");
+else console.log("  ✅ bukan cashback, tanpa fee sharing, bukan mayhem: creator fee masuk ke creator");
 
 if (CHECK) { console.log(`\n✅ CA valid. Jalankan tanpa --check untuk live-kan:  npm run launch -- ${CA}\n`); process.exit(0); }
 if (!vars.PRIVATE_KEY) die("PRIVATE_KEY belum diisi di Railway. Isi private key wallet yang dipakai launch, lalu jalankan lagi.");
